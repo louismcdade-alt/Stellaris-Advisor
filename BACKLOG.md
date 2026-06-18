@@ -21,7 +21,7 @@ function/behavior, and a "done when" check.
   Egalitarian build given a civic that requires Authoritarian) and all 12 shipped
   builds still report 0 issues.
 
-## 3. analyze.py: species-trait-aware economy advice
+## 3. [DONE 2026-06-18] analyze.py: species-trait-aware economy advice
 - **Where:** new `analyze_species(snap)` in `advisor/analyze.py`, added to
   `analyze()`; reads `snap['player']['identity']['species_traits']` (already
   extracted).

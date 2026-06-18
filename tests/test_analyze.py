@@ -1,4 +1,4 @@
-from advisor.analyze import analyze_economy, analyze_military
+from advisor.analyze import analyze_economy, analyze_military, analyze_species
 
 
 def _player(**overrides):
@@ -62,3 +62,19 @@ def test_analyze_military_reports_strongest_when_player_leads():
     good = [a for a in out if a['priority'] == 'good']
     assert good
     assert good[0]['title'] == 'Strongest military among rivals'
+
+
+def test_analyze_species_tips_on_mapped_trait():
+    player = _player()
+    player['identity']['species_traits'] = ['trait_intelligent', 'trait_unmapped_xyz']
+    out = analyze_species(_snap(player))
+    assert len(out) == 1
+    assert out[0]['category'] == 'research'
+    assert 'research' in out[0]['detail'].lower()
+
+
+def test_analyze_species_yields_nothing_for_unmapped_traits():
+    player = _player()
+    player['identity']['species_traits'] = ['trait_unmapped_xyz', 'trait_also_unmapped']
+    out = analyze_species(_snap(player))
+    assert out == []

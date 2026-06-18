@@ -47,3 +47,26 @@
   civic on an Authoritarian/Militarist build is not.
 - **Next:** BACKLOG item #3 (analyze.py: species-trait-aware economy advice)
   is the next highest-value unblocked task.
+
+## 2026-06-18 (cycle 3)
+- **Did:** Implemented BACKLOG item #3 — `analyze_species(snap)` in
+  `advisor/analyze.py`, wired into `analyze()` right after `analyze_economy`.
+  Maps founder-species traits to one-line tips via a small fixed
+  `SPECIES_TRAIT_TIPS` table: `trait_intelligent` -> research-jobs tip,
+  `trait_agrarian` -> farming districts, `trait_industrious` -> mineral
+  build, `trait_thrifty` -> energy jobs, `trait_charismatic` -> envoys/
+  diplomacy. Reused `EmpireProfile.traits` (already parsed from
+  `identity.species_traits` by `profile.py`) rather than re-reading the raw
+  snapshot field. Traits not in the table produce no advice, matching the
+  backlog's "done when" bar.
+- **Verified:** `python -m pytest -v` — 22 passed (2 new: mapped trait
+  produces exactly one research-category tip; unmapped traits yield
+  nothing). Manual smoke test of `analyze(snap)` end-to-end with a synthetic
+  snapshot containing `trait_intelligent` confirmed the new tip appears
+  alongside the existing advice categories with no regressions.
+- **Next:** BACKLOG item #4 (dashboard: economy & tech power comparison
+  tables) is the next highest-value unblocked task — note it's a
+  `templates/dashboard.html` (frontend) change, which per CLAUDE.md should
+  be visually verified in a browser before being called done; a future
+  cycle should start the app and check the dashboard rather than relying on
+  pytest alone.
