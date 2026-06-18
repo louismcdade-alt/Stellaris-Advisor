@@ -295,3 +295,28 @@
   file afterward to leave the dev environment as found.
 - **Next:** BACKLOG item #10 (analyze.py: planet unemployment hint) is the
   next highest-value unblocked task.
+
+## 2026-06-18 (cycle 10 — punted, not shipped)
+- **Did:** Attempted BACKLOG item #10. Investigated a real save's gamestate
+  to find owned-planet job/unemployment data, and found the actual current-
+  patch data model is significantly more involved than the item assumed:
+  planets and colonies are now separate save objects (the Pop Groups
+  rework split them), the inhabited-colony fields (`pop_groups`,
+  `pop_jobs`, `employable_pops`, `num_sapient_pops`, ...) live in a
+  separate `colony=` block, and no field directly gives an unemployment
+  count. The likeliest candidate field (`employable_pops`) couldn't be
+  confirmed — no localisation key exists for it, and on the one colony
+  checked it exactly equalled `num_sapient_pops`, which doesn't disambiguate
+  "currently employed" from "eligible to work".
+- **Why not shipped anyway:** guessing the field's meaning risks giving
+  actively wrong advice ("N pops unemployed" when that's not true), which
+  contradicts CLAUDE.md's core promise that advice is accurate because it's
+  read live from the game. Per the autorun process's hard rule, this is
+  logged to `NEEDS_REVIEW.md` (full findings + a suggested research path:
+  compare a colony with *visible* in-game unemployment against a fully-
+  employed one to isolate which field actually moves) instead of shipped.
+  BACKLOG item #10 marked `[BLOCKED — see NEEDS_REVIEW.md]`, not `[DONE]`.
+- **Verified:** no code changed; `python -m pytest -v` untouched at 39
+  passed (sanity-checked, not because this cycle touched anything testable).
+- **Next:** BACKLOG item #11 (analyze.py: respect `in_federation` in
+  diplomacy advice) is the next highest-value unblocked task.

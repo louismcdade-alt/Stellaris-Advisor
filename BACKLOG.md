@@ -82,7 +82,7 @@ function/behavior, and a "done when" check.
 - **Done when:** selecting a campaign, quitting, and relaunching reopens on that
   campaign; the dropdown reflects it.
 
-## 10. analyze.py: planet unemployment hint
+## 10. [BLOCKED — see NEEDS_REVIEW.md] analyze.py: planet unemployment hint
 - **Where:** `advisor/extract.py` (add a light owned-planet jobs scan, mirroring
   the on-demand pattern of `_fleet_composition`) + new `analyze_planets(snap)`.
 - **Do:** count pops without jobs across owned planets and emit a `warning` when
@@ -90,6 +90,16 @@ function/behavior, and a "done when" check.
   Keep the scan on-demand/cached if it's heavy, like the fleet scan.
 - **Done when:** a save with unemployed pops produces an unemployment advice card;
   a fully-employed empire produces none, and live-advice latency stays ~1.5s.
+- **2026-06-18 update:** investigated against a real save (cycle 10) — the
+  data model is more involved than this item assumed. Planets and colonies
+  are now separate save objects (`planet=` is celestial-only; the inhabited-
+  colony data — `pop_groups`, `pop_jobs`, `employable_pops`, etc. — lives in
+  a separate `colony=` block referenced by the planet's `colony=<id>`). No
+  field directly gives "N unemployed pops", and the obvious candidate
+  (`employable_pops`) couldn't be confirmed (no localisation key, and it
+  exactly equalled `num_sapient_pops` on the one colony checked, which
+  doesn't disambiguate its meaning). Full findings and a suggested research
+  approach are in `NEEDS_REVIEW.md` — read that before attempting this again.
 
 ## 11. analyze.py: stop suggesting alliances to empires already in a federation
 - **Where:** `advisor/analyze.py` (`analyze_diplomacy`); `snap['player']['in_federation']`
