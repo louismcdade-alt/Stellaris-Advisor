@@ -580,6 +580,8 @@ function renderFleet(d){
     <div class="stat">Tier: <b>${esc((d.tier||"").replace(/^./,c=>c.toUpperCase()))}</b>
       &nbsp;·&nbsp; Warships: <b>${d.warships}</b>
       &nbsp;·&nbsp; Naval capacity in use: <b>${d.used_naval_capacity}</b>
+      &nbsp;·&nbsp; This family: <b>${d.current_naval_capacity}</b> used /
+      <b>${d.recommended_naval_capacity}</b> recommended
       &nbsp;·&nbsp; costs from <b>${esc(d.data_source||"")}</b></div>`;
 
   const maxRec = Math.max(1, ...d.rows.map(r => Math.max(r.current, r.recommended)));

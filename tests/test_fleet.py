@@ -30,3 +30,23 @@ def test_recommend_unlocks_destroyers_with_tech():
     classes = {r['class'] for r in out['rows']}
     assert 'Destroyer' in classes
     assert out['tier'] == 'Destroyer'
+
+
+def test_recommend_reports_current_and_recommended_naval_capacity():
+    # 20 corvettes, fallback slot_cost(corvette) == 1 -> current capacity 20.
+    # Budget tracks the existing fleet (20 >= 8), and the only unlocked tier
+    # is corvette, so the whole budget goes to corvettes -> recommended == 20.
+    player = {'fleet': {'composition': {'corvette': 20}},
+              'researched_techs': [], 'used_naval_capacity': 20}
+    out = fleet.recommend(player)
+    assert out['current_naval_capacity'] == 20
+    assert out['recommended_naval_capacity'] == 20
+
+
+def test_recommend_naval_capacity_totals_only_count_this_hull_family():
+    # destroyer slot_cost == 2 (fallback); 5 destroyers -> current capacity 10.
+    player = {'fleet': {'composition': {'destroyer': 5}},
+              'researched_techs': ['tech_destroyers'], 'used_naval_capacity': 10}
+    out = fleet.recommend(player)
+    assert out['current_naval_capacity'] == 10
+    assert out['recommended_naval_capacity'] > 0

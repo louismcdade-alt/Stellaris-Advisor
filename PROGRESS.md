@@ -226,3 +226,25 @@
   myself.
 - **Next:** user to glance at the live app; BACKLOG item #7 (fleet.py naval
   capacity totals) up next regardless per "continue for one more cycle".
+
+## 2026-06-18 (cycle 7)
+- **Did:** Implemented BACKLOG item #7 — `fleet.recommend()` now returns
+  `current_naval_capacity`/`recommended_naval_capacity`, summing
+  `slot_cost x count` over the relevant hull family's rows only (not the
+  empire's total naval cap from other families/starbases, which
+  `used_naval_capacity` already covers). Reuses the existing `_slot_cost()`
+  live-gamedata lookup, so the totals track the current patch like
+  everything else in this module. Wired into `templates/dashboard.html`'s
+  `renderFleet()` — the fleet header now shows "This family: N used / M
+  recommended" next to the existing "Naval capacity in use". 2 new tests in
+  `tests/test_fleet.py`.
+- **Verified:** `python -m pytest -v` — 31 passed, 0 failed. Caught my own
+  mistake during manual testing: hit the real `/api/fleet` endpoint against
+  a server process that had been started *before* this edit, got `None` for
+  both new fields (stale loaded module, not a bug) — restarted the server
+  and re-checked: `current_naval_capacity: 32`, `recommended_naval_capacity:
+  30` against a real Cruiser-tier fleet of 26 warships. Confirmed the
+  served dashboard HTML contains the new header text. JS syntax check
+  clean.
+- **Next:** BACKLOG item #8 (fleet.py: surface Colossus & Juggernaut as
+  special line items) is the next highest-value unblocked task.

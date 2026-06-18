@@ -57,7 +57,7 @@ function/behavior, and a "done when" check.
 - **Done when:** a build whose traits sum over budget shows a warning in
   `audit_builds.py`; in-budget builds don't.
 
-## 7. fleet.py: report recommended vs current total naval capacity
+## 7. [DONE 2026-06-18] fleet.py: report recommended vs current total naval capacity
 - **Where:** `advisor/fleet.py` (`recommend`) and `dashboard.html` (`renderFleet`).
 - **Do:** sum `slot_cost × recommended` and `slot_cost × current` and return both
   (e.g. `recommended_naval_capacity`, `current_naval_capacity`); show them in the

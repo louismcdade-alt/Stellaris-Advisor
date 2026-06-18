@@ -9,6 +9,11 @@ the standard hull family and BioGenesis bioships.
 Doctrine: spam the cheapest hull early, shift to a main line of the heaviest hull
 you have, keep a cheap screen to soak strike craft / missiles, and add a capped
 number of titans for their fleet-wide auras.
+
+`current_naval_capacity`/`recommended_naval_capacity` sum slot_cost x count over
+this hull family's rows only (not the empire's total naval cap, which may include
+other families/starbases) -- they tell you what re-allocating to the recommended
+composition would cost versus what's already spent on it.
 """
 
 from . import gamedata
@@ -113,6 +118,8 @@ def recommend(player):
                      'current': cur, 'recommended': rec, 'delta': rec - cur})
 
     warships = sum(comp.get(h, 0) for h in tiers.values())
+    current_naval_capacity = sum(comp.get(h, 0) * _slot_cost(h) for h in tiers.values())
+    recommended_naval_capacity = sum(n * _slot_cost(name) for name, n in recommended.items())
     top_name = tiers[main]
     fam = 'bioship' if bio else 'standard'
     doctrine = _doctrine(main, fam, top_name)
@@ -141,6 +148,8 @@ def recommend(player):
         'family': fam,
         'data_source': 'game files' if gamedata.is_loaded() else 'built-in defaults',
         'used_naval_capacity': round(player.get('used_naval_capacity', 0) or 0),
+        'current_naval_capacity': round(current_naval_capacity),
+        'recommended_naval_capacity': round(recommended_naval_capacity),
         'warships': warships,
         'rows': rows,
         'notes': [n for n in notes if n],
