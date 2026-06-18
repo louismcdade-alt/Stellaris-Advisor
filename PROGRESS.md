@@ -158,3 +158,38 @@
   naval capacity) is the next highest-value unblocked task. Also: see
   `NEEDS_REVIEW.md` for the 8 over-budget builds, which should probably be
   addressed before or alongside whichever cycle picks that up.
+
+## 2026-06-18 (trait-point budget rebalance, requested follow-up to cycle 6)
+- **Did:** Rebalanced all 8 over-budget builds flagged in `NEEDS_REVIEW.md`,
+  per-build, by computing exact trait costs and the real `opposites` graph
+  live from the install (not guessed) and picking a fix that fits each
+  build's existing flavor:
+  - **Technocratic Pioneers:** swapped Sedentary (-1) -> Repugnant (-2).
+  - **Iron Conquerors:** added Repugnant (-2) — a conqueror doesn't need to
+    be liked.
+  - **Free Republic Traders:** dropped Ingenious (+2) as redundant with
+    Thrifty's energy synergy, rather than bolting on an unrelated drawback.
+  - **Agrarian Idyll (Tall):** added Deviants (-1) — a non-issue for a tall,
+    largely single-species empire.
+  - **Synthetic Ascendancy:** added Quarrelsome (-1) — irrelevant when
+    racing for Synthetic ascension instead of managing happiness.
+  - **Wilderness Living World:** added Nonadaptive (-2) — free, since the
+    Wilderness origin keeps you on one living world anyway (no normal
+    colonization to be hurt by a habitability penalty).
+  - **Evolutionary Predators:** added Repugnant (-2) — Xenophobe predators
+    were never trying to make friends.
+  - **Clone-Vat Swarm:** added Repugnant (-2) — a clone-vat empire isn't
+    winning hearts and minds either way.
+  Every addition was checked against the live `opposites` data for that
+  build's existing picks (no conflicts) and against the real 5-trait pick
+  limit (`@species_max_traits = 5`) — no build exceeds it. `why` text was
+  updated wherever a trait was added/removed/renamed so the description
+  still matches the actual picks.
+- **Verified:** `python audit_builds.py` — 0 issues across all 12 builds
+  (civics/ethics, origin, trait-existence, trait-opposites, AND the new
+  trait-point-budget check all pass). `python -m pytest -v` — 29 passed, 0
+  failed (no test changes needed; this was a content-only fix in
+  `advisor/builds.py`). Manually re-confirmed every build's trait count is
+  <= 5.
+- **Next:** `NEEDS_REVIEW.md` marked resolved. BACKLOG item #7 (fleet.py
+  naval capacity totals) remains the next highest-value unblocked task.

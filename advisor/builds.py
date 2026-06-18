@@ -31,12 +31,13 @@ BUILDS = [
         'authority': 'Oligarchic',
         'civics': ['Technocracy', 'Meritocracy'],
         'origin': 'Prosperous Unification',
-        'traits': ['Intelligent', 'Natural Engineers', 'Rapid Breeders', 'Deviants (-)', 'Sedentary (-)'],
+        'traits': ['Intelligent', 'Natural Engineers', 'Rapid Breeders', 'Deviants (-)', 'Repugnant (-)'],
         'ascension': 'Synthetic (needs Utopia)',
         'why': 'Technocracy turns researchers into a physics engine and Meritocracy boosts '
                'all specialists, so Intelligent + Natural Engineers compound your research '
                'lead. Rapid Breeders keeps the labs staffed; the negative traits are cheap '
-               'because Deviants/Sedentary barely matter for a tech turtle.',
+               'because Deviants/Repugnant barely matter when you are heads-down on research, '
+               'not diplomacy.',
     },
     {
         'name': 'Iron Conquerors',
@@ -46,12 +47,12 @@ BUILDS = [
         'authority': 'Imperial',
         'civics': ['Citizen Service', 'Distinguished Admiralty'],
         'origin': 'Prosperous Unification',
-        'traits': ['Very Strong', 'Industrious', 'Slow Learners (-)'],
+        'traits': ['Very Strong', 'Industrious', 'Slow Learners (-)', 'Repugnant (-)'],
         'ascension': 'Cybernetic (needs Utopia)',
         'why': 'Militarist + Distinguished Admiralty + Citizen Service stack fleet bonuses and '
                'give cheap, strong armies. Very Strong makes your soldiers and worker '
-               'output brutal for early conquest; Slow Learners is a fine dump since you win '
-               'by fighting, not out-teching.',
+               'output brutal for early conquest; Slow Learners and Repugnant are fine dumps '
+               'since you win by fighting, not out-teching or making friends.',
     },
     {
         'name': 'Free Republic Traders',
@@ -61,11 +62,11 @@ BUILDS = [
         'authority': 'Democratic',
         'civics': ['Beacon of Liberty', 'Free Haven'],
         'origin': 'Prosperous Unification',
-        'traits': ['Charismatic', 'Thrifty', 'Ingenious', 'Slow Breeders (-)'],
+        'traits': ['Charismatic', 'Thrifty', 'Slow Breeders (-)'],
         'ascension': 'Synthetic or Psionic (needs Utopia)',
         'why': 'Egalitarian + Free Haven = happy, immigrant-magnet pops; Charismatic and '
-               'Beacon of Liberty keep stability high while Thrifty pumps trade value and '
-               'Ingenious lifts energy. A peaceful, snowballing economy.',
+               'Beacon of Liberty keep stability high while Thrifty pumps trade value. '
+               'A peaceful, snowballing economy.',
     },
     {
         'name': 'Agrarian Idyll (Tall)',
@@ -75,11 +76,12 @@ BUILDS = [
         'authority': 'Democratic',
         'civics': ['Agrarian Idyll', 'Environmentalist'],
         'origin': 'Prosperous Unification',
-        'traits': ['Agrarian', 'Conservationist', 'Traditional', 'Sedentary (-)'],
+        'traits': ['Agrarian', 'Conservationist', 'Traditional', 'Sedentary (-)', 'Deviants (-)'],
         'ascension': 'Genetic / Biomorphosis (needs BioGenesis)',
         'why': 'Pacifist stability + Agrarian Idyll let rural districts carry your economy with '
                'low sprawl, so you play tall and efficient. Conservationist cuts upkeep and '
-               'Traditional accelerates the unity you need for traditions and ascension.',
+               'Traditional accelerates the unity you need for traditions and ascension. '
+               'Deviants is a non-issue for a tall, largely single-species empire.',
     },
 
     # ---------------- Utopia ----------------
@@ -105,11 +107,12 @@ BUILDS = [
         'authority': 'Dictatorial',
         'civics': ['Technocracy', 'Meritocracy'],
         'origin': 'Prosperous Unification',
-        'traits': ['Intelligent', 'Natural Physicists', 'Quick Learners', 'Fleeting (-)'],
+        'traits': ['Intelligent', 'Natural Physicists', 'Quick Learners', 'Fleeting (-)', 'Quarrelsome (-)'],
         'ascension': 'Synthetic',
         'why': 'Rush the Synthetic ascension path: once your pops are synths, output soars and '
                'food/consumer-goods worries vanish. Technocracy + Intelligent gets you there '
-               'fastest; Fleeting is a free dump because synths discard biological lifespans.',
+               'fastest; Fleeting is a free dump because synths discard biological lifespans, '
+               'and Quarrelsome barely matters when you are racing for ascension, not harmony.',
     },
     {
         'name': 'Psionic Enlightened',
@@ -135,13 +138,14 @@ BUILDS = [
         'authority': 'Hive Mind',
         'civics': ['Aerospace Adaptation', 'One Mind'],
         'origin': 'Wilderness',
-        'traits': ['Intelligent', 'Rapid Breeders', 'Strong', 'Sedentary (-)'],
+        'traits': ['Intelligent', 'Rapid Breeders', 'Strong', 'Sedentary (-)', 'Nonadaptive (-)'],
         'ascension': 'Biomorphosis — Purity (only path Wilderness allows)',
         'why': 'You ARE a sapient planet, growing as a tall living ecosystem and fielding '
                'bioships built from food, not minerals. Wilderness blocks every ascension '
                'path except the Purity branch of Biomorphosis, so lean into Purity to perfect '
                'your single living species. One Mind rewards your single-species nature and '
-               'Aerospace Adaptation strengthens your food-grown bioship fleets.',
+               'Aerospace Adaptation strengthens your food-grown bioship fleets. Nonadaptive '
+               'costs nothing — the Wilderness origin keeps you on your one living world anyway.',
     },
     {
         'name': 'Evolutionary Predators',
@@ -151,11 +155,12 @@ BUILDS = [
         'authority': 'Dictatorial',
         'civics': ['Genetic Identification', 'Distinguished Admiralty'],
         'origin': 'Evolutionary Predators',
-        'traits': ['Strong', 'Industrious', 'Rapid Breeders', 'Slow Learners (-)'],
+        'traits': ['Strong', 'Industrious', 'Rapid Breeders', 'Slow Learners (-)', 'Repugnant (-)'],
         'ascension': 'Biomorphosis — Purity',
         'why': 'You literally eat rivals to absorb their best genetic traits, so every war makes '
                'your species stronger. Militarist + Xenophobe fuels constant hunting; Purity '
-               'Biomorphosis bakes your stolen advantages into a perfected master species.',
+               'Biomorphosis bakes your stolen advantages into a perfected master species. '
+               'Repugnant barely matters — Xenophobe predators were never trying to make friends.',
     },
     {
         'name': 'Clone-Vat Swarm',
@@ -165,11 +170,12 @@ BUILDS = [
         'authority': 'Dictatorial',
         'civics': ['Crowdsourcing', 'Meritocracy'],
         'origin': 'Prosperous Unification',
-        'traits': ['Rapid Breeders', 'Communal', 'Strong'],
+        'traits': ['Rapid Breeders', 'Communal', 'Strong', 'Repugnant (-)'],
         'ascension': 'Biomorphosis — Cloning',
         'why': 'Cloning Biomorphosis plus growth traits gives explosive pop output — colonise '
                'and fill worlds faster than anyone. Meritocracy turns those plentiful pops into '
-               'strong specialists; a wide, pop-driven economic juggernaut.',
+               'strong specialists; a wide, pop-driven economic juggernaut. Repugnant costs '
+               'nothing since a clone-vat empire is not trying to win hearts and minds.',
     },
     {
         'name': 'Gene Purists (Tall)',
