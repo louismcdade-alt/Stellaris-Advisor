@@ -1,0 +1,8 @@
+# The advisor itself uses only the Python standard library.
+#
+# The native desktop window (app.py) needs pywebview, which on Windows uses the
+# Edge WebView2 runtime already built into Windows 10/11:
+pywebview>=5.0
+
+# If you only ever use the browser version (run.py), you don't need anything:
+#     python run.py

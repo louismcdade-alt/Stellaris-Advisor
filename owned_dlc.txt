@@ -1,0 +1,5 @@
+# Manually-declared DLC you own, one per line.
+# The advisor auto-detects DLC from your Steam install, but you can list extra
+# ones here (e.g. just-purchased DLC that Steam hasn't finished downloading).
+# Lines starting with # are ignored.
+BioGenesis
