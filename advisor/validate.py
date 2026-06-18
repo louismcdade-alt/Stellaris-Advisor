@@ -8,7 +8,8 @@ Checks, per build, that every element is actually usable:
   * the origin exists,
   * each species trait exists AND is selectable at empire creation for a normal
     biological species (not ascension/cyborg/robotic/shroud, and not locked to a
-    specific phenotype via species_class).
+    specific phenotype via species_class), and no two selected traits are
+    mutually-exclusive `opposites` (e.g. Rapid Breeders + Slow Breeders).
 
 Catalogs are read once from the install (cached). If the install can't be found
 we report 'unknown' rather than failing builds. This is the same logic the
@@ -151,7 +152,24 @@ def _load_traits(install, data):
             nonstartable = fn.startswith(nonstart)
             startable = 'BIOLOGICAL' in arch and not nonstartable and not locked
             data['trait_info'][m.group(1)] = {
-                'startable': startable, 'phenotype': locked, 'nonstart': nonstartable}
+                'startable': startable, 'phenotype': locked, 'nonstart': nonstartable,
+                'opposites': _trait_opposites(block)}
+
+
+def _trait_opposites(block):
+    """A trait's `opposites = { "trait_x" "trait_y" }` block -> the set of
+    trait ids it can't be picked alongside."""
+    m = re.search(r'opposites\s*=\s*\{', block)
+    if not m:
+        return set()
+    sub = _block(block, m.start())
+    return set(re.findall(r'"(trait_[a-z0-9_]+)"', sub))
+
+
+def _traits_conflict(id_a, id_b, trait_info):
+    a = trait_info.get(id_a, {})
+    b = trait_info.get(id_b, {})
+    return id_b in a.get('opposites', set()) or id_a in b.get('opposites', set())
 
 
 def _block(text, at):
@@ -237,6 +255,7 @@ def validate_build(build):
     if not cat['origin_names'].get(_norm(oname)):
         issues.append(f'origin "{build["origin"]}" not found in game files')
 
+    selected = []
     for tr in build['traits']:
         name = re.sub(r'\s*\(.*?\)|\s*—.*$', '', tr).strip()
         ids = cat['trait_names'].get(_norm(name))
@@ -250,5 +269,15 @@ def validate_build(build):
                 issues.append(f'trait "{tr}" needs a specific species/phenotype')
             else:
                 issues.append(f'trait "{tr}" not selectable for a biological species')
+        else:
+            rep = next((i for i in ids if cat['trait_info'].get(i, {}).get('startable')),
+                       next(iter(ids)))
+            selected.append((tr, rep))
+
+    for i, (label_a, id_a) in enumerate(selected):
+        for label_b, id_b in selected[i + 1:]:
+            if _traits_conflict(id_a, id_b, cat['trait_info']):
+                issues.append(f'traits "{label_a}" and "{label_b}" are opposites '
+                               f'and cannot both be picked')
 
     return {'verified': not issues, 'issues': issues, 'checked': True}

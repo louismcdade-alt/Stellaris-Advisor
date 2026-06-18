@@ -97,3 +97,32 @@
   it a quick look the next time the app is opened normally.
 - **Next:** BACKLOG item #5 (validate.py: detect conflicting trait
   `opposites` within a build) is the next highest-value unblocked task.
+
+## 2026-06-18 (cycle 5)
+- **Did:** Implemented BACKLOG item #5 — `validate_build` now flags builds
+  that pick two mutually-exclusive traits. Added `_trait_opposites(block)`
+  to `advisor/validate.py` (parses a trait's `opposites = { "trait_x" ... }`
+  block, handling both single-line and multi-line forms), stored the result
+  per trait id in `_load_traits`'s existing `trait_info` dict, and added
+  `_traits_conflict(id_a, id_b, trait_info)` (checks both directions since
+  `opposites` isn't always declared symmetrically in the game files). Wired
+  into `validate_build`'s trait loop: each successfully-validated trait's
+  representative startable id is collected, then every pair is checked.
+  4 new tests in `tests/test_validate.py` (parsing single-line and
+  multi-line `opposites`, absent-case, and `_traits_conflict` both
+  directions plus the no-conflict case).
+- **Verified:** `python -m pytest -v` — 26 passed, 0 failed. Running
+  `audit_builds.py` against the real install caught a genuine pre-existing
+  bug: the shipped "Iron Conquerors" build picked both "Strong" and "Very
+  Strong" (real mutually-exclusive trait tiers in the game files) — exactly
+  the bug class this check exists to catch. Fixed `advisor/builds.py` to
+  drop "Strong" (redundant with "Very Strong") so the build is actually
+  pickable in-game; `audit_builds.py` is back to 0 issues across all 12
+  builds. Also found and fixed a `KeyError` crash in the new code (a trait
+  id present in `civic_names`/`trait_names` localisation but not loaded
+  into `trait_info`, e.g. a ruler trait outside the species/ascension trait
+  files, used `cat['trait_info'][i]` instead of `.get(i, {})`). Manually
+  confirmed the check has teeth with a synthetic Rapid Breeders + Slow
+  Breeders build (correctly flagged).
+- **Next:** BACKLOG item #6 (validate.py: trait-point budget check) is the
+  next highest-value unblocked task.

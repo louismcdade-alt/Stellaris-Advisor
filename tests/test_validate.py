@@ -1,4 +1,5 @@
-from advisor.validate import _ethic_requirements, _build_ethic_ids, _ethic_ok
+from advisor.validate import (_ethic_requirements, _build_ethic_ids, _ethic_ok,
+                               _trait_opposites, _traits_conflict)
 
 
 def test_ethic_requirements_parses_or_as_required():
@@ -69,3 +70,39 @@ def test_ethic_ok_required_and_excluded():
     assert _ethic_ok({'ethic_authoritarian'}, set(), have) is False
     assert _ethic_ok({'ethic_egalitarian'}, set(), have) is True
     assert _ethic_ok(set(), {'ethic_egalitarian'}, have) is False
+
+
+def test_trait_opposites_parses_quoted_list():
+    block = '''
+    trait_rapid_breeders = {
+        cost = 2
+        opposites = { "trait_slow_breeders" "trait_fertile" }
+    }
+    '''
+    assert _trait_opposites(block) == {'trait_slow_breeders', 'trait_fertile'}
+
+
+def test_trait_opposites_handles_multiline_block():
+    block = '''
+    trait_auto_mod_biological = {
+        opposites = {
+            "trait_wilderness"
+        }
+    }
+    '''
+    assert _trait_opposites(block) == {'trait_wilderness'}
+
+
+def test_trait_opposites_empty_when_absent():
+    assert _trait_opposites('trait_x = { cost = 2 }') == set()
+
+
+def test_traits_conflict_checks_both_directions():
+    info = {
+        'trait_rapid_breeders': {'opposites': {'trait_slow_breeders'}},
+        'trait_slow_breeders': {'opposites': set()},
+        'trait_unrelated': {'opposites': set()},
+    }
+    assert _traits_conflict('trait_rapid_breeders', 'trait_slow_breeders', info) is True
+    assert _traits_conflict('trait_slow_breeders', 'trait_rapid_breeders', info) is True
+    assert _traits_conflict('trait_rapid_breeders', 'trait_unrelated', info) is False

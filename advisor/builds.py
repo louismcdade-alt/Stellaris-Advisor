@@ -46,10 +46,10 @@ BUILDS = [
         'authority': 'Imperial',
         'civics': ['Citizen Service', 'Distinguished Admiralty'],
         'origin': 'Prosperous Unification',
-        'traits': ['Strong', 'Very Strong', 'Industrious', 'Slow Learners (-)'],
+        'traits': ['Very Strong', 'Industrious', 'Slow Learners (-)'],
         'ascension': 'Cybernetic (needs Utopia)',
         'why': 'Militarist + Distinguished Admiralty + Citizen Service stack fleet bonuses and '
-               'give cheap, strong armies. Strong/Very Strong make your soldiers and worker '
+               'give cheap, strong armies. Very Strong makes your soldiers and worker '
                'output brutal for early conquest; Slow Learners is a fine dump since you win '
                'by fighting, not out-teching.',
     },

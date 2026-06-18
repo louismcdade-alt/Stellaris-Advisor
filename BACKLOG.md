@@ -41,7 +41,7 @@ function/behavior, and a "done when" check.
 - **Done when:** the Live Advisor right column shows three ranked power tables and
   they update only when their data changes.
 
-## 5. validate.py: detect conflicting trait `opposites` within a build
+## 5. [DONE 2026-06-18] validate.py: detect conflicting trait `opposites` within a build
 - **Where:** `advisor/validate.py` (`_load_traits`, `validate_build`).
 - **Do:** capture each trait's `opposites = { … }`; flag a build that lists two
   mutually-exclusive traits (e.g. `Rapid Breeders` + `Slow Breeders`).
