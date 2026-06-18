@@ -74,7 +74,7 @@ function/behavior, and a "done when" check.
 - **Done when:** a save with a colossus shows it as its own line, and the tier
   recommendations are unchanged.
 
-## 9. Persist the last-selected campaign across launches
+## 9. [DONE 2026-06-18] Persist the last-selected campaign across launches
 - **Where:** `advisor/watcher.py` (`AdvisorState.set_campaign`) + `server.py`
   (`/api/select`); store in a small `last_campaign.txt` next to `owned_dlc.txt`.
 - **Do:** on `set_campaign`, write the choice; on `AdvisorState.__init__`, default

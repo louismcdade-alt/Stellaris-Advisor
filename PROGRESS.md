@@ -271,3 +271,27 @@
   HTML contains the new render path.
 - **Next:** BACKLOG item #9 (persist last-selected campaign) is the next
   highest-value unblocked task.
+
+## 2026-06-18 (cycle 9)
+- **Did:** Implemented BACKLOG item #9 — `advisor/watcher.py` now persists
+  the dashboard's campaign selection to `last_campaign.txt` (project root,
+  next to `owned_dlc.txt`, already pre-listed in `.gitignore` with a comment
+  anticipating exactly this). New `_read_last_campaign()`/
+  `_write_last_campaign()`; `AdvisorState.__init__` now defaults
+  `self.campaign` to the persisted value when none is passed on the CLI
+  (`campaign or _read_last_campaign() or None` — an explicit `--campaign`
+  flag still wins), and `set_campaign()` writes the choice (including
+  writing `''` when switching back to "Auto", which correctly clears the
+  persisted value on the next launch). This is app-managed runtime state,
+  not user data — same category as `advisor.log`, not `owned_dlc.txt`.
+- **Verified:** `python -m pytest -v` — 39 passed (6 new tests in
+  `tests/test_watcher.py`, using `monkeypatch` to redirect the persisted-
+  state path to a `tmp_path` so tests never touch the real project-root
+  file). End-to-end against the real app: selected a real campaign via
+  `/api/select`, confirmed `last_campaign.txt` was written with the right
+  folder name, restarted the server (simulating a relaunch) and confirmed
+  `/api/campaigns` reported it as `selected` again — exactly the backlog's
+  "done when". Reset selection back to auto and deleted the test-generated
+  file afterward to leave the dev environment as found.
+- **Next:** BACKLOG item #10 (analyze.py: planet unemployment hint) is the
+  next highest-value unblocked task.
