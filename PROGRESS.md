@@ -338,3 +338,37 @@
   regression to the case the bug fix doesn't touch.
 - **Next:** BACKLOG item #12 (validate.py: origin ethic/authority
   requirements) is the next highest-value unblocked task.
+
+## 2026-06-18 (cycle 12)
+- **Did:** Implemented BACKLOG item #12 — `validate_build` now checks an
+  origin's own ethic/authority requirements, mirroring the civic check from
+  item #2. Confirmed live: 20 of 61 origins gate ethics and 11 gate
+  authority via the identical `OR`/`NOT`/`NOR` shape civics use. Refactored
+  `_ethic_requirements` into a generic `_gate_requirements(block, section,
+  prefix)` (kept `_ethic_requirements`'s external behavior/signature
+  unchanged — gestalt-discard quirk included — so existing tests needed no
+  changes) and added `_authority_requirements` as a thin wrapper over it.
+  New `_load_origin_gates` scans `00_origins.txt` into `origin_ethics`/
+  `origin_authority` catalog dicts. New `_BUILD_AUTH_IDS`/
+  `_build_authority_id` map builds.py's authority labels ("Hive Mind",
+  "Democratic", ...) to `auth_xxx` ids (a different label set than
+  `profile.py`'s noun-form `_AUTH_LABEL`, since `builds.py` uses adjectives).
+  `validate_build` checks both gates after the origin-exists check, only
+  when the build's authority label is recognized (skips silently rather
+  than false-flagging on an unrecognized label).
+- **Verified:** `python -m pytest -v` — 44 passed (3 new tests: bare-value
+  required parsing, NOT-excluded parsing, label->id mapping). `python
+  audit_builds.py` — 0 issues across all 12 builds (unlike cycle 6's
+  trait-budget check, this one didn't surface any pre-existing bugs — the
+  shipped builds' origin/ethic/authority pairings were already correct).
+  Manually confirmed the check has teeth both ways: a synthetic
+  Necrophage+Fanatic-Xenophile build is flagged ("conflicts with
+  ethic(s): ethic_fanatic_xenophile"), a synthetic Progenitor-Hive+
+  Democratic build is flagged ("needs authority: auth_hive_mind"), and a
+  correctly-paired Progenitor-Hive+Hive-Mind build raises no origin-gate
+  issue (only the expected, pre-existing civic mismatch from using the
+  wrong civics in the synthetic test build).
+- **Next:** this closes out the requested batch of 5 cycles (8, 9, 10
+  [punted — see NEEDS_REVIEW.md], 11, 12). BACKLOG item #13 (extract.py:
+  surface active-war status) is the next highest-value unblocked task,
+  flagged as exploratory in its own entry.

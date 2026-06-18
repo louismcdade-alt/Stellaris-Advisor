@@ -113,7 +113,7 @@ function/behavior, and a "done when" check.
   no longer produces the "No allies yet" card; the existing rivals/allies cards
   are unaffected.
 
-## 12. validate.py: check origin ethic/authority requirements (mirrors civic check)
+## 12. [DONE 2026-06-18] validate.py: check origin ethic/authority requirements (mirrors civic check)
 - **Where:** `advisor/validate.py` (`_load_loc`/new `_load_origin_categories` or
   extend `_catalogs`); reuse the existing `_ethic_requirements`/`_ethic_ok` helpers
   from the civic check (item #2).
