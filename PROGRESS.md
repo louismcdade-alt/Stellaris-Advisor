@@ -248,3 +248,26 @@
   clean.
 - **Next:** BACKLOG item #8 (fleet.py: surface Colossus & Juggernaut as
   special line items) is the next highest-value unblocked task.
+
+## 2026-06-18 (cycle 8)
+- **Did:** Implemented BACKLOG item #8 — `fleet.recommend()` now returns a
+  `specials` list (`[{'class', 'count', 'naval_capacity'}, ...]`) for any
+  owned Colossus/Juggernaut, kept entirely separate from `rows`/the tier
+  budget math (they were never part of `STD_TIERS`/`BIO_TIERS` to begin
+  with, so this required no change to the recommendation math itself — just
+  surfacing data that already existed in `comp`). Added `colossus`/
+  `juggernaut` to `FALLBACK_SLOT` (confirmed live: both cost 32 naval
+  capacity, `class: shipclass_military_special`/`shipclass_starbase`) so
+  the new behavior is deterministic in tests regardless of whether a real
+  install is present — previously these two hulls had no fallback entry at
+  all. Dashboard's `renderFleet()` shows a small second table ("Special
+  hull") below the main tier table when `specials` is non-empty.
+- **Verified:** `python -m pytest -v` — 33 passed, 0 failed (3 new tests:
+  Colossus surfaces as a special row not a tier row, owning one doesn't
+  change the corvette tier's own recommended count, and an empty/no-capital-
+  hull fleet reports `specials: []`). JS syntax check clean. Started the
+  real app and confirmed `/api/fleet` returns `specials` (empty for this
+  save, which owns neither hull — correct, not an error) and the served
+  HTML contains the new render path.
+- **Next:** BACKLOG item #9 (persist last-selected campaign) is the next
+  highest-value unblocked task.

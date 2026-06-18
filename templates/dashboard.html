@@ -598,6 +598,20 @@ function renderFleet(d){
     </tr>`;
   }).join("");
 
+  const specialRows = (d.specials||[]).map(s => `<tr>
+      <td class="hull">${esc(s.class)}</td>
+      <td class="n">${s.count}</td>
+      <td class="n">—</td>
+      <td><span class="act ok">${s.naval_capacity} cap</span></td>
+    </tr>`).join("");
+  const specials = specialRows ? `
+    <div class="build fleetcard" style="margin-top:14px">
+      <table class="ftable">
+        <tr><th>Special hull</th><th class="n">You have</th><th class="n">Recommended</th><th>Naval cap</th></tr>
+        ${specialRows}
+      </table>
+    </div>` : "";
+
   const notes = (d.notes||[]).map(n => `<div class="why">${esc(n)}</div>`).join("");
   body.innerHTML = `
     <div class="build fleetcard">
@@ -606,6 +620,7 @@ function renderFleet(d){
         ${rows}
       </table>
     </div>
+    ${specials}
     ${notes}`;
 }
 

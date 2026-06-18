@@ -65,7 +65,7 @@ function/behavior, and a "done when" check.
 - **Done when:** the Fleet tab header shows current vs recommended capacity totals
   derived from the live `gamedata` slot costs.
 
-## 8. fleet.py: surface Colossus & Juggernaut as special line items
+## 8. [DONE 2026-06-18] fleet.py: surface Colossus & Juggernaut as special line items
 - **Where:** `advisor/fleet.py` (`recommend`) — these are excluded from the tier
   table today (class `shipclass_military_special` / `shipclass_starbase`).
 - **Do:** if the player owns one (present in composition), add a non-tier "special"
