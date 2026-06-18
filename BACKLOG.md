@@ -90,3 +90,62 @@ function/behavior, and a "done when" check.
   Keep the scan on-demand/cached if it's heavy, like the fleet scan.
 - **Done when:** a save with unemployed pops produces an unemployment advice card;
   a fully-employed empire produces none, and live-advice latency stays ~1.5s.
+
+## 11. analyze.py: stop suggesting alliances to empires already in a federation
+- **Where:** `advisor/analyze.py` (`analyze_diplomacy`); `snap['player']['in_federation']`
+  is already extracted (`extract.py:401`) but never read anywhere in `analyze.py`.
+- **Do:** if `in_federation` is true, treat the empire as having allies (skip the
+  "No allies yet — consider a defensive pact" suggestion; optionally add a `good`
+  card noting federation membership instead) — federation members may have no
+  bilateral `alliance` relation flag, which is the only thing the current check
+  looks at, so it can give actively wrong advice today.
+- **Done when:** a snapshot with `in_federation: True` and no rival/ally relations
+  no longer produces the "No allies yet" card; the existing rivals/allies cards
+  are unaffected.
+
+## 12. validate.py: check origin ethic/authority requirements (mirrors civic check)
+- **Where:** `advisor/validate.py` (`_load_loc`/new `_load_origin_categories` or
+  extend `_catalogs`); reuse the existing `_ethic_requirements`/`_ethic_ok` helpers
+  from the civic check (item #2).
+- **Do:** origins gate on ethics the same way civics do (`ethics = { OR/NOT/NOR =
+  {...} }` inside `possible`/`potential`) — confirmed live: 20 of the 61 origins in
+  `common/governments/civics/00_origins.txt` have an `ethics =` block (e.g.
+  `origin_necrophage`, `origin_syncretic_evolution`, `origin_common_ground`).
+  `validate_build` currently only checks the origin *exists*, not whether the
+  build's ethics actually qualify for it. Parse and check the same way civics are.
+- **Done when:** `audit_builds.py` flags a deliberately-wrong origin/ethics pairing,
+  and re-run against all 12 shipped builds — fix any that turn out to actually be
+  mismatched (same pattern as the trait-budget check in item #6, which did turn up
+  real bugs) before calling it done.
+
+## 13. extract.py + analyze.py: surface active-war status
+- **Where:** `advisor/extract.py` (new parsing of the gamestate's top-level `war=`
+  / `wars=` blocks — not parsed at all today, only `last_date_at_war` and per-relation
+  `truce` are) + `advisor/analyze.py` (`analyze_military` or `analyze_diplomacy`).
+- **Do:** inspect a real save's gamestate to confirm the war-block shape first (this
+  is the exploratory part), then detect whether the player is currently a war
+  participant and against whom, and surface a `warning`/`info` card with the
+  opponent and (if present) war exhaustion — today the advisor only has historical
+  "you were at war as of `last_date_at_war`" framing, not "you are at war right now".
+- **Done when:** a save where the player is mid-war produces a card naming the
+  opponent; a save at peace produces none, and live-advice latency stays ~1.5s.
+
+## 14. dashboard: Empire Builder free-text search
+- **Where:** `templates/dashboard.html` (`buildGoalButtons`/`loadBuilds`, the
+  `#builder-head` row).
+- **Do:** add a text input next to the goal-filter chips that filters the already-
+  loaded `d.builds` client-side by substring match against name/civics/traits/origin
+  (no new API call needed — `loadBuilds()` already has the full list in memory).
+- **Done when:** typing e.g. "hive" narrows the builder grid to matching builds
+  instantly, clearing the box restores the full (goal-filtered) list.
+
+## 15. README.md: document the test suite and current module layout
+- **Where:** `README.md` ("Project layout" section, currently lists only 4 of the
+  ~13 modules in `advisor/`) and a missing mention of `pytest`/`audit_builds.py`.
+- **Do:** update the file tree to match `advisor/`'s actual contents (`builds.py`,
+  `validate.py`, `profile.py`, `knowledge.py`, `gamedata.py`, `dlc.py`), and add a
+  short "Development" section: `python -m pip install -r requirements-dev.txt`,
+  `python -m pytest`, `python audit_builds.py`.
+- **Done when:** the file tree in the README matches `ls advisor/`, and a fresh
+  clone's setup instructions are sufficient to run the test suite without reading
+  CLAUDE.md first.
