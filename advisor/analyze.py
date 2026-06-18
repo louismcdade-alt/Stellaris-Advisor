@@ -216,6 +216,40 @@ def analyze_economy(snap):
     return out
 
 
+# Founder-species traits worth a tip: (category, title, detail). Not every
+# trait needs advice — just the ones that should noticeably steer a build.
+SPECIES_TRAIT_TIPS = {
+    'trait_intelligent': ('research', 'Intelligent species — lean into research jobs',
+                          'Your founder species researches faster. Prioritise researcher '
+                          'jobs and labs to make the most of it.'),
+    'trait_agrarian': ('economy', 'Agrarian species — favour farming districts',
+                       'Your founder species produces more food per farmer. Lean into '
+                       'agriculture districts and food buildings.'),
+    'trait_industrious': ('economy', 'Industrious species — mineral-heavy build',
+                          'Your founder species mines more minerals per miner. Lean into '
+                          'mining districts and mineral buildings.'),
+    'trait_thrifty': ('economy', 'Thrifty species — favour energy jobs',
+                      'Your founder species produces more energy per technician. Lean into '
+                      'energy districts and generator buildings.'),
+    'trait_charismatic': ('diplomacy', 'Charismatic species — lean on envoys',
+                          'Your founder species is more persuasive. Use envoys for opinion '
+                          'and diplomatic weight.'),
+}
+
+
+def analyze_species(snap):
+    """Tips driven by the founder species' traits (e.g. Intelligent -> research)."""
+    prof = _profile(snap)
+    out = []
+    for trait in prof.traits:
+        tip = SPECIES_TRAIT_TIPS.get(trait)
+        if tip:
+            category, title, detail = tip
+            out.append({'priority': 'info', 'category': category, 'title': title,
+                        'detail': detail})
+    return out
+
+
 def analyze_military(snap):
     out = []
     p = snap['player']
@@ -432,6 +466,7 @@ def analyze(snap):
     items += analyze_origin_civics(snap)
     items += analyze_ascension(snap)
     items += analyze_economy(snap)
+    items += analyze_species(snap)
     items += analyze_standing(snap)
     items += analyze_expansion(snap)
     items += analyze_military(snap)

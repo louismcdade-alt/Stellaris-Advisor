@@ -282,6 +282,14 @@
         <h2>Empire Power — Military</h2>
         <table id="powertable"><tbody></tbody></table>
       </section>
+      <section>
+        <h2>Empire Power — Economy</h2>
+        <table id="econpowertable"><tbody></tbody></table>
+      </section>
+      <section>
+        <h2>Empire Power — Technology</h2>
+        <table id="techpowertable"><tbody></tbody></table>
+      </section>
     </div>
   </div>
   </div><!-- /view-live -->
@@ -319,7 +327,8 @@ const RES_ORDER = [
 const CATCOLOR = {economy:"#46e0a0",military:"#ff7a8a",diplomacy:"#c98cff",research:"#46c6ff",
   expansion:"#ffd166",progression:"#8be9fd",identity:"#ffb454",origin:"#9af0c0",
   civics:"#9ab8ff",ascension:"#e08bff"};
-let sigAdvice="", sigAsc="", sigRes="", sigPower="", lastRes={};
+let sigAdvice="", sigAsc="", sigRes="", lastRes={};
+const sigPower = {military_power:"", economy_power:"", tech_power:""};
 
 function cardHTML(a, i){
   return `<div class="card ${a.priority}" style="animation-delay:${Math.min(i*55,500)}ms">
@@ -352,13 +361,34 @@ async function loadCampaigns(){
 document.getElementById("campaign").addEventListener("change", async (e) => {
   document.getElementById("status").textContent = "loading…";
   try{ const d = await (await fetch("/api/select?campaign="+encodeURIComponent(e.target.value),{cache:"no-store"})).json();
-       sigAdvice=sigAsc=sigRes=sigPower=""; render(d); }catch(err){}
+       sigAdvice=sigAsc=sigRes=""; sigPower.military_power=sigPower.economy_power=sigPower.tech_power="";
+       render(d); }catch(err){}
 });
 
 async function tick(){
   try { render(await (await fetch("/api/advice",{cache:"no-store"})).json()); }
   catch(e){ document.getElementById("status").textContent = "server unreachable";
     document.getElementById("dot").style.background = "#ff5b6e"; }
+}
+
+function renderPowerTable(d, field, tableId, label){
+  const emp = (d.empires||[]).filter(e => e.type==="default").sort((a,b)=> (b[field]||0)-(a[field]||0));
+  const sig = JSON.stringify(emp.map(e=>[e.id,e[field]]));
+  if(sig === sigPower[field]) return;
+  sigPower[field] = sig;
+  const max = emp.length ? (emp[0][field]||0) : 1;
+  const rows = emp.map(e => {
+    const you = e.id === d.player.id;
+    const w = Math.max(2, 100*(e[field]||0)/(max||1));
+    return `<tr class="${you?'you':''}">
+      <td class="name">${esc(e.name)}${you?' ◄ you':''}</td>
+      <td style="width:46%"><div class="bar"><span data-w="${w}"></span></div></td>
+      <td class="num">${fmt(e[field])}</td></tr>`;
+  }).join("");
+  const table = document.getElementById(tableId);
+  table.innerHTML = '<tr><th>Empire</th><th>'+label+'</th><th class="num">Score</th></tr>' + rows;
+  requestAnimationFrame(()=>table.querySelectorAll(".bar > span")
+    .forEach(s=> s.style.width = s.dataset.w + "%"));
 }
 
 function render(d){
@@ -421,25 +451,10 @@ function render(d){
     lastRes = {...res};
   }
 
-  // Power comparison
-  const emp = (d.empires||[]).filter(e => e.type==="default").sort((a,b)=> b.military_power - a.military_power);
-  const sigP = JSON.stringify(emp.map(e=>[e.id,e.military_power]));
-  if(sigP !== sigPower){
-    sigPower = sigP;
-    const max = emp.length ? emp[0].military_power : 1;
-    const prows = emp.map(e => {
-      const you = e.id === d.player.id;
-      const w = Math.max(2, 100*e.military_power/max);
-      return `<tr class="${you?'you':''}">
-        <td class="name">${esc(e.name)}${you?' ◄ you':''}</td>
-        <td style="width:46%"><div class="bar"><span data-w="${w}"></span></div></td>
-        <td class="num">${fmt(e.military_power)}</td></tr>`;
-    }).join("");
-    document.getElementById("powertable").innerHTML =
-      '<tr><th>Empire</th><th>Fleet power</th><th class="num">Score</th></tr>' + prows;
-    requestAnimationFrame(()=>document.querySelectorAll("#powertable .bar > span")
-      .forEach(s=> s.style.width = s.dataset.w + "%"));
-  }
+  // Power comparison (military / economy / tech share the same ranked-bar layout)
+  renderPowerTable(d, "military_power", "powertable", "Fleet power");
+  renderPowerTable(d, "economy_power", "econpowertable", "Economy power");
+  renderPowerTable(d, "tech_power", "techpowertable", "Tech power");
 
   const dlc = d.dlc && d.dlc.names ? d.dlc.names.join(", ") : "—";
   document.getElementById("foot").textContent =

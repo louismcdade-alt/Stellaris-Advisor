@@ -3,7 +3,7 @@
 Small, concrete, single-sitting tasks, ordered by value. Each names the file(s),
 function/behavior, and a "done when" check.
 
-## 1. Add a pytest suite (there are currently none)
+## 1. [DONE 2026-06-18] Add a pytest suite (there are currently none)
 - **Where:** new `tests/` dir; `requirements-dev.txt` with `pytest`.
 - **Do:** unit-test `clausewitz.parse`/`extract_block` (round-trip a small inline
   Clausewitz string incl. duplicate keys, arrays, nested blocks) and the pure
@@ -12,7 +12,7 @@ function/behavior, and a "done when" check.
 - **Done when:** `python -m pytest` passes with ≥10 assertions covering the parser
   and at least `analyze_economy`, `analyze_military`, `fleet.recommend`.
 
-## 2. validate.py: check civic ↔ ethics/authority requirements
+## 2. [DONE 2026-06-18] validate.py: check civic ↔ ethics/authority requirements
 - **Where:** `advisor/validate.py` (`_load_civic_categories` / `validate_build`).
 - **Do:** parse each civic's `potential`/`possible` block for `has_ethic = …`
   requirements and verify against `build['ethics']`. Currently only file-based
@@ -21,7 +21,7 @@ function/behavior, and a "done when" check.
   Egalitarian build given a civic that requires Authoritarian) and all 12 shipped
   builds still report 0 issues.
 
-## 3. analyze.py: species-trait-aware economy advice
+## 3. [DONE 2026-06-18] analyze.py: species-trait-aware economy advice
 - **Where:** new `analyze_species(snap)` in `advisor/analyze.py`, added to
   `analyze()`; reads `snap['player']['identity']['species_traits']` (already
   extracted).
@@ -32,7 +32,7 @@ function/behavior, and a "done when" check.
   `category:'economy'` (or `'research'`) tip mentioning research, and a species
   with none of the mapped traits yields nothing extra.
 
-## 4. dashboard: economy & tech power comparison tables
+## 4. [DONE 2026-06-18] dashboard: economy & tech power comparison tables
 - **Where:** `templates/dashboard.html` (`render()`); payload `d.empires` already
   carries `economy_power` and `tech_power`.
 - **Do:** add two tables/bars beside the existing military "Empire Power" table,
@@ -41,14 +41,14 @@ function/behavior, and a "done when" check.
 - **Done when:** the Live Advisor right column shows three ranked power tables and
   they update only when their data changes.
 
-## 5. validate.py: detect conflicting trait `opposites` within a build
+## 5. [DONE 2026-06-18] validate.py: detect conflicting trait `opposites` within a build
 - **Where:** `advisor/validate.py` (`_load_traits`, `validate_build`).
 - **Do:** capture each trait's `opposites = { … }`; flag a build that lists two
   mutually-exclusive traits (e.g. `Rapid Breeders` + `Slow Breeders`).
 - **Done when:** a build with an opposing pair is reported as not-verified with a
   clear message; current builds stay at 0 issues.
 
-## 6. validate.py: trait-point budget check
+## 6. [DONE 2026-06-18] validate.py: trait-point budget check
 - **Where:** `advisor/validate.py`; read each trait's `cost` from the trait files
   (you already brace-extract the block).
 - **Do:** sum positive/negative `cost` for a build's starting traits and warn if
