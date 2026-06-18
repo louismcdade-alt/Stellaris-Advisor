@@ -320,3 +320,21 @@
   passed (sanity-checked, not because this cycle touched anything testable).
 - **Next:** BACKLOG item #11 (analyze.py: respect `in_federation` in
   diplomacy advice) is the next highest-value unblocked task.
+
+## 2026-06-18 (cycle 11)
+- **Did:** Implemented BACKLOG item #11 — `analyze_diplomacy` now reads the
+  already-extracted `player['in_federation']` flag. Federation members no
+  longer get the "No allies yet — consider a defensive pact" suggestion
+  (federation membership may not set a bilateral `alliance` relation flag,
+  which was the only thing the old check looked at), and now get a `good`
+  "Federation member" card in the same slot the "N ally/allies" card uses
+  when there's no separate bilateral alliance to list.
+- **Verified:** `python -m pytest -v` — 41 passed (2 new tests: federation
+  member without bilateral alliance relations gets the federation card and
+  not the "no allies" suggestion; a non-federation empire's existing "no
+  allies" suggestion is unchanged). Cross-checked against the real save:
+  this player is in a federation *and* has explicit ally relations, so the
+  existing "2 ally/allies" card still fires correctly — confirms no
+  regression to the case the bug fix doesn't touch.
+- **Next:** BACKLOG item #12 (validate.py: origin ethic/authority
+  requirements) is the next highest-value unblocked task.

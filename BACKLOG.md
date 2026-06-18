@@ -101,7 +101,7 @@ function/behavior, and a "done when" check.
   doesn't disambiguate its meaning). Full findings and a suggested research
   approach are in `NEEDS_REVIEW.md` — read that before attempting this again.
 
-## 11. analyze.py: stop suggesting alliances to empires already in a federation
+## 11. [DONE 2026-06-18] analyze.py: stop suggesting alliances to empires already in a federation
 - **Where:** `advisor/analyze.py` (`analyze_diplomacy`); `snap['player']['in_federation']`
   is already extracted (`extract.py:401`) but never read anywhere in `analyze.py`.
 - **Do:** if `in_federation` is true, treat the empire as having allies (skip the

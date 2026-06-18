@@ -1,4 +1,4 @@
-from advisor.analyze import analyze_economy, analyze_military, analyze_species
+from advisor.analyze import analyze_economy, analyze_military, analyze_species, analyze_diplomacy
 
 
 def _player(**overrides):
@@ -15,6 +15,8 @@ def _player(**overrides):
         'balance': {'energy': 0, 'minerals': 0, 'alloys': 0, 'food': 0,
                     'consumer_goods': 0, 'trade': 0},
         'military_power': 1000,
+        'relations': [],
+        'in_federation': False,
     }
     base.update(overrides)
     return base
@@ -78,3 +80,31 @@ def test_analyze_species_yields_nothing_for_unmapped_traits():
     player['identity']['species_traits'] = ['trait_unmapped_xyz', 'trait_also_unmapped']
     out = analyze_species(_snap(player))
     assert out == []
+
+
+def _diplomacy_setup(in_federation):
+    rivalA = {'id': '1', 'type': 'default', 'name': 'Rival A', 'military_power': 100}
+    contactB = {'id': '2', 'type': 'default', 'name': 'Contact B', 'military_power': 500}
+    contactC = {'id': '3', 'type': 'default', 'name': 'Contact C', 'military_power': 200}
+    player = _player(relations=[
+        {'country': 1, 'communications': True, 'is_rival': True},
+        {'country': 2, 'communications': True},
+        {'country': 3, 'communications': True},
+    ], in_federation=in_federation)
+    snap = _snap(player, {'1': rivalA, '2': contactB, '3': contactC})
+    return snap
+
+
+def test_analyze_diplomacy_suggests_ally_when_not_in_federation():
+    out = analyze_diplomacy(_diplomacy_setup(in_federation=False))
+    titles = [a['title'] for a in out]
+    assert 'No allies yet — consider a defensive pact' in titles
+
+
+def test_analyze_diplomacy_suppresses_ally_suggestion_when_in_federation():
+    out = analyze_diplomacy(_diplomacy_setup(in_federation=True))
+    titles = [a['title'] for a in out]
+    assert 'No allies yet — consider a defensive pact' not in titles
+    assert 'Federation member' in titles
+    good = [a for a in out if a['title'] == 'Federation member']
+    assert good[0]['priority'] == 'good'

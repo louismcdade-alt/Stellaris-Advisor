@@ -346,9 +346,13 @@ def analyze_diplomacy(snap):
             'detail': 'Rivalries give influence but block cooperation: '
                       + ', '.join(name_of(r['country']) for r in rivals) + '.'})
 
-    if not allies and len(known) >= 2 and not prof.inward:
+    in_federation = bool(p.get('in_federation'))
+
+    if not allies and not in_federation and len(known) >= 2 and not prof.inward:
         # Suggest the strongest non-rival contact as an ally candidate.
-        # (Inward Perfection empires shun alliances, so skip this for them.)
+        # (Inward Perfection empires shun alliances, so skip this for them.
+        # Federation members may have no bilateral 'alliance' relation flag
+        # even though the federation itself is their alliance — skip too.)
         candidates = []
         for r in known:
             if r.get('is_rival'):
@@ -372,6 +376,13 @@ def analyze_diplomacy(snap):
             'title': f'{len(allies)} ally/allies',
             'detail': 'Allied with ' + ', '.join(name_of(r['country']) for r in allies)
                       + '. Coordinate wars and share intel.'})
+    elif in_federation:
+        out.append({
+            'priority': 'good', 'category': 'diplomacy',
+            'title': 'Federation member',
+            'detail': 'You belong to a federation — coordinate fleets and research with your '
+                      'federation members, and invest in federation laws/cohesion to grow its '
+                      'benefits further.'})
 
     if not out:
         out.append({
