@@ -8,12 +8,14 @@
   :root {
     --bg: #05070f; --panel: rgba(16,24,48,.72); --panel2: rgba(19,31,61,.72);
     --line: rgba(70,110,200,.22); --text: #d3e2ff; --muted: #8197c6;
-    --accent: #46c6ff; --accent2: #6a7bff;
+    --accent: #46c6ff; --accent2: #6a7bff; --accent-rgb: 70,198,255;
+    --gold: #ffd166; --gold-rgb: 255,209,102;
     --crit: #ff5b6e; --warn: #ffb454; --info: #5fa8ff; --good: #46e0a0;
     --cat-economy:#46e0a0; --cat-military:#ff7a8a; --cat-economy2:#46e0a0;
     --cat-diplomacy:#c98cff; --cat-research:#46c6ff; --cat-expansion:#ffd166;
     --cat-progression:#8be9fd; --cat-identity:#ffb454; --cat-origin:#9af0c0;
     --cat-civics:#9ab8ff; --cat-ascension:#e08bff;
+    --cut: 14px; /* corner-cut size for the angular Stellaris panel chrome */
   }
   * { box-sizing: border-box; }
   html,body { height:100%; }
@@ -36,13 +38,18 @@
     background: linear-gradient(180deg, rgba(8,12,26,.85), rgba(8,12,26,.55));
     position: sticky; top: 0; z-index: 5; backdrop-filter: blur(10px);
   }
-  header .logo { flex: none; filter: drop-shadow(0 0 9px rgba(70,198,255,.45)); }
+  header::before, header::after { content:""; position:absolute; top:6px; width:18px; height:18px;
+    border-top: 2px solid rgba(var(--gold-rgb),.65); pointer-events:none; }
+  header::before { left:6px; border-left: 2px solid rgba(var(--gold-rgb),.65); }
+  header::after { right:6px; border-right: 2px solid rgba(var(--gold-rgb),.65); }
+  header .logo { flex: none; filter: drop-shadow(0 0 9px rgba(var(--accent-rgb),.45)); }
   header h1 { font-size: 17px; margin: 0; letter-spacing: 1.5px; font-weight: 700; }
-  header h1 .lit { color: var(--accent); text-shadow: 0 0 18px rgba(70,198,255,.7); }
+  header h1 .lit { color: var(--accent); text-shadow: 0 0 18px rgba(var(--accent-rgb),.7); }
   .empire { color: var(--accent); font-weight: 700; }
-  .profile { color: #062018; font-size: 11.5px; font-weight: 700; padding: 3px 11px;
-    border-radius: 20px; background: linear-gradient(90deg,var(--good),#7af0c8);
-    box-shadow: 0 0 14px rgba(70,224,160,.35); cursor: default; }
+  .profile { color: #2a1d00; font-size: 11.5px; font-weight: 700; padding: 3px 12px;
+    clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+    background: linear-gradient(90deg,var(--gold),#ffe9b3);
+    box-shadow: 0 0 14px rgba(var(--gold-rgb),.4); cursor: default; }
   .profile.empty { display: none; }
   .date { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
   .spacer { margin-left: auto; }
@@ -51,7 +58,7 @@
     border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 13px; cursor: pointer;
     max-width: 280px; transition: border-color .2s, box-shadow .2s;
   }
-  select:hover { border-color: var(--accent); box-shadow: 0 0 12px rgba(70,198,255,.25); }
+  select:hover { border-color: var(--accent); box-shadow: 0 0 12px rgba(var(--accent-rgb),.25); }
   .status { color: var(--muted); font-size: 12.5px; display:flex; align-items:center; gap:6px; }
   .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--good);
     box-shadow: 0 0 0 0 rgba(70,224,160,.7); animation: pulse 2s infinite; }
@@ -62,14 +69,25 @@
   .grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; padding: 18px 22px; max-width: 1480px; }
   @media (max-width: 1040px){ .grid { grid-template-columns: 1fr; } }
   .col { display: flex; flex-direction: column; gap: 16px; }
-  section { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  section { position: relative; background: var(--panel); border: 1px solid var(--line);
+    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%,
+      var(--cut) 100%, 0 calc(100% - var(--cut)));
     overflow: hidden; backdrop-filter: blur(8px);
     box-shadow: 0 8px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04); }
+  section::after { content:""; position:absolute; inset:0; pointer-events:none;
+    background: linear-gradient(100deg, transparent 40%, rgba(var(--accent-rgb),.08) 48%,
+      rgba(var(--accent-rgb),.08) 52%, transparent 60%);
+    background-size: 260% 100%; background-position: 130% 0;
+    animation: scansweep 9s ease-in-out infinite; }
+  @keyframes scansweep { 0%,80%{background-position: 130% 0;} 95%,100%{background-position: -30% 0;} }
   section > h2 { margin: 0; padding: 11px 16px; font-size: 12px; text-transform: uppercase;
     letter-spacing: 1.5px; color: var(--muted); border-bottom: 1px solid var(--line);
     display:flex; align-items:center; gap:8px; }
   section > h2 .count { margin-left:auto; color: var(--accent); font-size: 11px; }
   .advice { padding: 10px 12px; min-height: 60px; }
+  .scan-flash { animation: scanflash 1s ease; }
+  @keyframes scanflash { from{ box-shadow: inset 0 0 40px rgba(var(--accent-rgb),.35);}
+    to{ box-shadow: inset 0 0 0 rgba(var(--accent-rgb),0);} }
 
   .card { position: relative; border-left: 4px solid var(--info); background: var(--panel2);
     border-radius: 9px; padding: 10px 14px; margin: 9px 0; overflow: hidden;
@@ -98,19 +116,21 @@
   td, th { padding: 7px 16px; text-align: left; font-variant-numeric: tabular-nums; }
   th { color: var(--muted); font-weight: 500; font-size: 11.5px; text-transform: uppercase; letter-spacing: .5px; }
   tr + tr td { border-top: 1px solid var(--line); }
-  tbody tr { animation: rowin .4s ease backwards; }
+  tbody tr { animation: rowin .4s ease backwards; transition: background .15s; }
+  tbody tr:hover td { background: rgba(var(--accent-rgb),.07); }
   @keyframes rowin { from{opacity:0; transform:translateX(-6px);} to{opacity:1;} }
   .num { text-align: right; }
   .pos { color: var(--good); } .neg { color: var(--crit); } .zero { color: var(--muted); }
   .bar { height: 7px; background: rgba(8,14,32,.8); border-radius: 5px; overflow: hidden; }
   .bar > span { display: block; height: 100%; border-radius:5px;
     background: linear-gradient(90deg, var(--accent), var(--accent2));
-    box-shadow: 0 0 10px rgba(70,198,255,.5); width:0; transition: width .9s cubic-bezier(.2,.8,.2,1); }
-  .you td { background: rgba(70,198,255,.10); }
+    box-shadow: 0 0 10px rgba(var(--accent-rgb),.5); width:0; transition: width .9s cubic-bezier(.2,.8,.2,1); }
+  .you td { background: rgba(var(--accent-rgb),.10); }
+  tr.you:hover td { background: rgba(var(--accent-rgb),.18); }
   .you .name { color: var(--accent); font-weight: 700; }
   .you .bar > span { background: linear-gradient(90deg, var(--good), var(--accent)); }
   .flash { animation: flash 1s ease; }
-  @keyframes flash { from{ background: rgba(70,198,255,.25);} to{ background: transparent;} }
+  @keyframes flash { from{ background: rgba(var(--accent-rgb),.25);} to{ background: transparent;} }
 
   .empty { padding: 36px; text-align: center; color: var(--muted); }
   .err { color: var(--warn); }
@@ -118,12 +138,15 @@
 
   /* Tabs */
   .tabs { display:flex; gap:8px; padding: 12px 22px 0; }
-  .tab { background: var(--panel2); color: var(--muted); border: 1px solid var(--line);
-    border-bottom: none; border-radius: 10px 10px 0 0; padding: 9px 18px; font: inherit;
+  .tab { position: relative; background: var(--panel2); color: var(--muted); border: 1px solid var(--line);
+    border-bottom: none; clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
+    padding: 9px 18px; font: inherit;
     font-size: 14px; cursor: pointer; transition: color .2s, background .2s; }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--accent); background: var(--panel); font-weight: 600;
-    box-shadow: 0 -2px 14px rgba(70,198,255,.18); }
+    box-shadow: 0 -2px 14px rgba(var(--accent-rgb),.18); }
+  .tab.active::after { content:""; position:absolute; left:10px; right:10px; bottom:0; height:2px;
+    background: linear-gradient(90deg, var(--gold), var(--accent)); }
 
   /* Empire Builder */
   .builder-head { display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding: 16px 22px 4px; }
@@ -138,7 +161,9 @@
   .builder-dlc b { color: var(--good); }
   .builds { display:grid; grid-template-columns: repeat(auto-fill, minmax(330px,1fr));
     gap: 16px; padding: 14px 22px 26px; }
-  .build { background: var(--panel); border:1px solid var(--line); border-radius: 14px;
+  .build { background: var(--panel); border:1px solid var(--line);
+    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%,
+      var(--cut) 100%, 0 calc(100% - var(--cut)));
     overflow:hidden; backdrop-filter: blur(8px); animation: cardin .5s backwards;
     box-shadow: 0 8px 26px rgba(0,0,0,.32); display:flex; flex-direction:column; }
   .build-top { display:flex; align-items:center; gap:8px; padding: 13px 16px 8px; }
@@ -149,7 +174,7 @@
   .dlcbadge.dlc { background: linear-gradient(90deg,#e08bff,#c98cff); }
   .gchips { display:flex; gap:5px; flex-wrap:wrap; padding: 0 16px 10px; }
   .gchip { font-size:10.5px; color: var(--accent); border:1px solid var(--line);
-    border-radius: 20px; padding: 2px 9px; background: rgba(70,198,255,.08); }
+    border-radius: 20px; padding: 2px 9px; background: rgba(var(--accent-rgb),.08); }
   .build table { width:100%; border-collapse:collapse; }
   .build td, .build th { padding: 6px 16px; vertical-align: top; font-size: 13px; }
   .build th { color: var(--muted); font-weight:500; text-transform:uppercase; letter-spacing:.5px;
@@ -330,6 +355,54 @@ const CATCOLOR = {economy:"#46e0a0",military:"#ff7a8a",diplomacy:"#c98cff",resea
 let sigAdvice="", sigAsc="", sigRes="", lastRes={};
 const sigPower = {military_power:"", economy_power:"", tech_power:""};
 
+// ---- Empire-flavored color theme: the dashboard's accent shifts to match
+// the player's authority/dominant ethic, like Stellaris' own ethic colors.
+const THEMES = {
+  hive:          {accent:"#ff5b6e", accent2:"#ff8a3c", rgb:"255,91,110"},
+  machine:       {accent:"#8be9fd", accent2:"#5fa8ff", rgb:"139,233,253"},
+  megacorp:      {accent:"#46e0a0", accent2:"#ffd166", rgb:"70,224,160"},
+  militarist:    {accent:"#ff7a4d", accent2:"#ff5b6e", rgb:"255,122,77"},
+  pacifist:      {accent:"#46e0a0", accent2:"#5fa8ff", rgb:"70,224,160"},
+  xenophobe:     {accent:"#ff8a3c", accent2:"#ff5b6e", rgb:"255,138,60"},
+  xenophile:     {accent:"#46e0c6", accent2:"#46c6ff", rgb:"70,224,198"},
+  materialist:   {accent:"#46c6ff", accent2:"#6a7bff", rgb:"70,198,255"},
+  spiritualist:  {accent:"#c98cff", accent2:"#9a6bff", rgb:"201,140,255"},
+  authoritarian: {accent:"#ffd166", accent2:"#ffb454", rgb:"255,209,102"},
+  egalitarian:   {accent:"#5fa8ff", accent2:"#46c6ff", rgb:"95,168,255"},
+  default:       {accent:"#46c6ff", accent2:"#6a7bff", rgb:"70,198,255"},
+};
+const ETHIC_ORDER = ["militarist","pacifist","xenophobe","xenophile","materialist",
+  "spiritualist","authoritarian","egalitarian"];
+let lastThemeKey = "";
+
+function pickTheme(identity){
+  if(!identity) return ["default", THEMES.default];
+  if(identity.authority === "auth_hive_mind") return ["hive", THEMES.hive];
+  if(identity.authority === "auth_machine_intelligence") return ["machine", THEMES.machine];
+  if(identity.authority === "auth_corporate") return ["megacorp", THEMES.megacorp];
+  const ethics = identity.ethics || [];
+  for(const key of ETHIC_ORDER) if(ethics.includes("ethic_fanatic_"+key)) return [key, THEMES[key]];
+  for(const key of ETHIC_ORDER) if(ethics.includes("ethic_"+key)) return [key, THEMES[key]];
+  return ["default", THEMES.default];
+}
+
+function applyEmpireTheme(d){
+  const [key, t] = pickTheme(d.player && d.player.identity);
+  if(key === lastThemeKey) return;
+  lastThemeKey = key;
+  const root = document.documentElement.style;
+  root.setProperty("--accent", t.accent);
+  root.setProperty("--accent2", t.accent2);
+  root.setProperty("--accent-rgb", t.rgb);
+}
+
+function pulseFlash(el){
+  if(!el) return;
+  el.classList.remove("scan-flash");
+  void el.offsetWidth; // restart the animation even if it's already applied
+  el.classList.add("scan-flash");
+}
+
 function cardHTML(a, i){
   return `<div class="card ${a.priority}" style="animation-delay:${Math.min(i*55,500)}ms">
       <div class="top">
@@ -401,6 +474,7 @@ function render(d){
   }
   dot.style.background = "var(--good)";
   document.getElementById("status").textContent = "live";
+  applyEmpireTheme(d);
   document.getElementById("empire").textContent = d.player.name || "—";
   document.getElementById("date").textContent = d.date || "—";
   const prof = document.getElementById("profile");
@@ -422,6 +496,7 @@ function render(d){
     document.getElementById("advcount").textContent = mainList.length ? mainList.length+" tips" : "";
     document.getElementById("advice").innerHTML =
       mainList.map(cardHTML).join("") || '<div class="empty">No advice — all clear.</div>';
+    pulseFlash(document.getElementById("advice"));
   }
 
   // Ascension & Traditions section.
@@ -431,6 +506,7 @@ function render(d){
     document.getElementById("ascsection").style.display = ascList.length ? "" : "none";
     document.getElementById("asccount").textContent = ascList.length ? ascList.length+" tips" : "";
     document.getElementById("ascension").innerHTML = ascList.map(cardHTML).join("");
+    if(ascList.length) pulseFlash(document.getElementById("ascension"));
   }
 
   // Resources

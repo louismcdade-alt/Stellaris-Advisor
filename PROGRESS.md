@@ -193,3 +193,36 @@
   <= 5.
 - **Next:** `NEEDS_REVIEW.md` marked resolved. BACKLOG item #7 (fleet.py
   naval capacity totals) remains the next highest-value unblocked task.
+
+## 2026-06-18 (theme pass, requested by user — not a BACKLOG item)
+- **Did:** Made the dashboard "feel more Stellaris" per explicit user
+  request, picking 3 directions they chose from a multi-select: (1)
+  authentic Stellaris UI chrome — angular corner-cut panels (clip-path) on
+  every `section`/`.build` card and the tabs, a gold corner-bracket accent
+  on the header, and a gold "selected" treatment on the profile badge and
+  active-tab underline; (2) more motion/feedback — a slow diagonal scan-
+  sweep highlight across each panel, row-hover glow on every table, and a
+  `.scan-flash` pulse on the advice/ascension panels whenever new advice
+  data actually changes (a `pulseFlash()` helper that force-reflows so the
+  animation restarts on every distinct update, not just the first); (3)
+  empire-flavored color theming — the whole accent palette (`--accent`,
+  `--accent2`, `--accent-rgb`, used throughout via `rgba(var(--accent-rgb),
+  x)`) now shifts based on the player's real authority/dominant ethic (read
+  from `d.player.identity.authority`/`.ethics`, already in the existing API
+  payload — no backend change needed): red for Hive Mind, cyan-chrome for
+  Machine Intelligence, green/gold for Megacorp, and a per-ethic color
+  (orange militarist, teal xenophile, purple spiritualist, gold
+  authoritarian, etc.) with fanatic ethics taking priority, mirroring
+  `profile.py`'s own "fanatic first" ordering.
+- **Verified:** inline `<script>` parses cleanly (Node syntax check) before
+  and after. `python -m pytest -v` — 29 passed (no Python touched).
+  Started the real app (`python run.py --no-browser --port 8772`) and
+  confirmed via curl that `/api/advice` exposes real
+  `player.identity.authority`/`.ethics` (this save: `auth_democratic` +
+  `ethic_fanatic_egalitarian` -> correctly resolves to the Egalitarian
+  theme), and that the served HTML contains the new theme/animation code.
+  Opened the running app in the user's browser for them to eyeball directly
+  — no screenshot tool available this session to confirm pixel rendering
+  myself.
+- **Next:** user to glance at the live app; BACKLOG item #7 (fleet.py naval
+  capacity totals) up next regardless per "continue for one more cycle".
