@@ -3,7 +3,7 @@
 Small, concrete, single-sitting tasks, ordered by value. Each names the file(s),
 function/behavior, and a "done when" check.
 
-## 1. Add a pytest suite (there are currently none)
+## 1. [DONE 2026-06-18] Add a pytest suite (there are currently none)
 - **Where:** new `tests/` dir; `requirements-dev.txt` with `pytest`.
 - **Do:** unit-test `clausewitz.parse`/`extract_block` (round-trip a small inline
   Clausewitz string incl. duplicate keys, arrays, nested blocks) and the pure

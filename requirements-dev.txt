@@ -1,0 +1,4 @@
+# Dev-only dependencies for running the test suite.
+# The advisor itself stays stdlib-only (see requirements.txt) — this is
+# never imported by advisor/ or app.py.
+pytest>=7.0
