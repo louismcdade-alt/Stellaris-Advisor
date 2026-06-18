@@ -126,3 +126,35 @@
   Breeders build (correctly flagged).
 - **Next:** BACKLOG item #6 (validate.py: trait-point budget check) is the
   next highest-value unblocked task.
+
+## 2026-06-18 (cycle 6)
+- **Did:** Implemented BACKLOG item #6 — `validate_build` now flags builds
+  whose selected traits' net `cost` exceeds the starting trait-point budget.
+  Added `_trait_cost(block)` (parses a trait's top-level `cost = N`,
+  excluding `slave_cost`/etc via a negative lookbehind), stored it per trait
+  in `_load_traits`'s `trait_info`, and added `_TRAIT_POINT_BUDGET = 2`
+  (confirmed live: `@species_trait_points = 2` in
+  `common/species_archetypes/00_species_archetypes.txt` — not guessed, and
+  not exceeded by any of the 12 builds' civics/origins, since the only two
+  things in the install that add trait points, `Natural Design` civic and
+  `Overtuned` origin, aren't used by any of them). 3 new tests in
+  `tests/test_validate.py` (positive/negative cost parsing, `slave_cost`
+  exclusion, absent-cost default).
+- **Verified:** `python -m pytest -v` — 29 passed, 0 failed. Manually
+  confirmed a synthetic in-budget build (single -1 drawback trait) is not
+  flagged.
+- **Notable finding, NOT auto-fixed:** running `audit_builds.py` against the
+  real install shows **8 of the 12 shipped builds exceed this real budget**
+  (e.g. Iron Conquerors: Very Strong(3) + Industrious(2) + Slow Learners(-1)
+  = 4 net, over the budget of 2). Unlike cycle 5's Strong/Very Strong fix
+  (a strictly redundant duplicate, no judgment call), rebalancing these 8
+  requires picking which trait to cut or which drawback to add per build —
+  a design/flavor decision, not a mechanical one — so per the autorun hard
+  rules this was logged to `NEEDS_REVIEW.md` (full breakdown, per-build net
+  costs, and a suggested fix-per-build approach) instead of being changed
+  unilaterally. The check itself is correct and shipped; the build content
+  needs a follow-up pass.
+- **Next:** BACKLOG item #7 (fleet.py: report recommended vs current total
+  naval capacity) is the next highest-value unblocked task. Also: see
+  `NEEDS_REVIEW.md` for the 8 over-budget builds, which should probably be
+  addressed before or alongside whichever cycle picks that up.

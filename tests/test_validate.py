@@ -1,5 +1,5 @@
 from advisor.validate import (_ethic_requirements, _build_ethic_ids, _ethic_ok,
-                               _trait_opposites, _traits_conflict)
+                               _trait_opposites, _traits_conflict, _trait_cost)
 
 
 def test_ethic_requirements_parses_or_as_required():
@@ -106,3 +106,22 @@ def test_traits_conflict_checks_both_directions():
     assert _traits_conflict('trait_rapid_breeders', 'trait_slow_breeders', info) is True
     assert _traits_conflict('trait_slow_breeders', 'trait_rapid_breeders', info) is True
     assert _traits_conflict('trait_rapid_breeders', 'trait_unrelated', info) is False
+
+
+def test_trait_cost_parses_positive_and_negative():
+    assert _trait_cost('trait_x = { cost = 2 }') == 2.0
+    assert _trait_cost('trait_x = { cost = -2 }') == -2.0
+
+
+def test_trait_cost_ignores_slave_cost():
+    block = '''
+    trait_x = {
+        slave_cost = { value = 5 }
+        cost = 1
+    }
+    '''
+    assert _trait_cost(block) == 1.0
+
+
+def test_trait_cost_defaults_to_zero_when_absent():
+    assert _trait_cost('trait_x = { category = normal }') == 0.0

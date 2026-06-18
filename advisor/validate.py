@@ -8,8 +8,9 @@ Checks, per build, that every element is actually usable:
   * the origin exists,
   * each species trait exists AND is selectable at empire creation for a normal
     biological species (not ascension/cyborg/robotic/shroud, and not locked to a
-    specific phenotype via species_class), and no two selected traits are
-    mutually-exclusive `opposites` (e.g. Rapid Breeders + Slow Breeders).
+    specific phenotype via species_class), no two selected traits are
+    mutually-exclusive `opposites` (e.g. Rapid Breeders + Slow Breeders), and
+    their net `cost` doesn't exceed the default starting trait-point budget.
 
 Catalogs are read once from the install (cached). If the install can't be found
 we report 'unknown' rather than failing builds. This is the same logic the
@@ -114,6 +115,13 @@ _BASE_ETHIC_IDS = {
 }
 
 
+# Default species starting trait points. Not exposed as a simple literal in
+# any data file (species_classes' species_trait_points field is documented
+# but unset in the base game; civics/origins only ever *add* to it), so this
+# is the well-known base-game default rather than something read live.
+_TRAIT_POINT_BUDGET = 2
+
+
 def _ethic_ok(required, excluded, have):
     if required and not (required & have):
         return False
@@ -153,7 +161,14 @@ def _load_traits(install, data):
             startable = 'BIOLOGICAL' in arch and not nonstartable and not locked
             data['trait_info'][m.group(1)] = {
                 'startable': startable, 'phenotype': locked, 'nonstart': nonstartable,
-                'opposites': _trait_opposites(block)}
+                'opposites': _trait_opposites(block), 'cost': _trait_cost(block)}
+
+
+def _trait_cost(block):
+    """A trait's top-level `cost = N` (positive for upgrades, negative for
+    drawbacks) -> float, 0 if absent. Excludes `slave_cost`/other *_cost keys."""
+    m = re.search(r'(?<![a-zA-Z_])cost\s*=\s*(-?\d+(?:\.\d+)?)', block)
+    return float(m.group(1)) if m else 0.0
 
 
 def _trait_opposites(block):
@@ -279,5 +294,10 @@ def validate_build(build):
             if _traits_conflict(id_a, id_b, cat['trait_info']):
                 issues.append(f'traits "{label_a}" and "{label_b}" are opposites '
                                f'and cannot both be picked')
+
+    net_cost = sum(cat['trait_info'].get(tid, {}).get('cost', 0.0) for _, tid in selected)
+    if net_cost > _TRAIT_POINT_BUDGET:
+        issues.append(f'traits cost {net_cost:g} points, over the starting budget of '
+                       f'{_TRAIT_POINT_BUDGET:g} ({", ".join(label for label, _ in selected)})')
 
     return {'verified': not issues, 'issues': issues, 'checked': True}

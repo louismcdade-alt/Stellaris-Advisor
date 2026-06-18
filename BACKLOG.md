@@ -48,7 +48,7 @@ function/behavior, and a "done when" check.
 - **Done when:** a build with an opposing pair is reported as not-verified with a
   clear message; current builds stay at 0 issues.
 
-## 6. validate.py: trait-point budget check
+## 6. [DONE 2026-06-18] validate.py: trait-point budget check
 - **Where:** `advisor/validate.py`; read each trait's `cost` from the trait files
   (you already brace-extract the block).
 - **Do:** sum positive/negative `cost` for a build's starting traits and warn if
