@@ -32,7 +32,7 @@ function/behavior, and a "done when" check.
   `category:'economy'` (or `'research'`) tip mentioning research, and a species
   with none of the mapped traits yields nothing extra.
 
-## 4. dashboard: economy & tech power comparison tables
+## 4. [DONE 2026-06-18] dashboard: economy & tech power comparison tables
 - **Where:** `templates/dashboard.html` (`render()`); payload `d.empires` already
   carries `economy_power` and `tech_power`.
 - **Do:** add two tables/bars beside the existing military "Empire Power" table,

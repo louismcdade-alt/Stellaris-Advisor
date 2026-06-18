@@ -70,3 +70,30 @@
   be visually verified in a browser before being called done; a future
   cycle should start the app and check the dashboard rather than relying on
   pytest alone.
+
+## 2026-06-18 (cycle 4)
+- **Did:** Implemented BACKLOG item #4 — added "Empire Power — Economy" and
+  "Empire Power — Technology" tables to the Live Advisor right column,
+  beside the existing military power table, ranking the player vs. default
+  empires on `economy_power`/`tech_power` (already in the `/api/advice`
+  payload). Refactored the previously inline military-power render block in
+  `templates/dashboard.html` into a shared `renderPowerTable(d, field,
+  tableId, label)` so all three tables reuse the same ranked-bar markup and
+  per-field change-signature diffing (now an object `sigPower` keyed by
+  field instead of one flat string) — matches the existing "only re-render
+  when data changes" pattern used elsewhere in the file.
+- **Verified:** No Python changed, so `python -m pytest -v` stayed at 22
+  passed/0 failed (regression check only). Per CLAUDE.md's UI-change rule,
+  started the real app (`python run.py --no-browser --port 8771`) against
+  the player's actual current save, confirmed `/api/advice` returns real
+  `economy_power`/`tech_power` per empire (incl. correctly excluding fallen
+  empires/pirates/primitives/etc. via the existing `type==="default"`
+  filter), confirmed the served dashboard HTML contains all three table
+  element IDs (`powertable`, `econpowertable`, `techpowertable`), and
+  confirmed the page's inline `<script>` block parses with no syntax errors
+  before and after the change. Did not have a screenshot/vision tool
+  available in this session to confirm pixel-level rendering — the
+  end-to-end data path and DOM wiring are verified, but a human should give
+  it a quick look the next time the app is opened normally.
+- **Next:** BACKLOG item #5 (validate.py: detect conflicting trait
+  `opposites` within a build) is the next highest-value unblocked task.
