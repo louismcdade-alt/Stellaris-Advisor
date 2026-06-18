@@ -12,7 +12,7 @@ function/behavior, and a "done when" check.
 - **Done when:** `python -m pytest` passes with ≥10 assertions covering the parser
   and at least `analyze_economy`, `analyze_military`, `fleet.recommend`.
 
-## 2. validate.py: check civic ↔ ethics/authority requirements
+## 2. [DONE 2026-06-18] validate.py: check civic ↔ ethics/authority requirements
 - **Where:** `advisor/validate.py` (`_load_civic_categories` / `validate_build`).
 - **Do:** parse each civic's `potential`/`possible` block for `has_ethic = …`
   requirements and verify against `build['ethics']`. Currently only file-based

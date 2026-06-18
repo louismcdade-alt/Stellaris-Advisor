@@ -2,8 +2,9 @@
 Validate Empire Builder builds against the installed game files.
 
 Checks, per build, that every element is actually usable:
-  * civics exist and suit the build's authority (regular / gestalt hive|machine /
-    corporate),
+  * civics exist, suit the build's authority (regular / gestalt hive|machine /
+    corporate), and don't conflict with the build's ethics (e.g. a civic gated
+    on Authoritarian ethics picked for an Egalitarian build),
   * the origin exists,
   * each species trait exists AND is selectable at empire creation for a normal
     biological species (not ascension/cyborg/robotic/shroud, and not locked to a
@@ -13,6 +14,11 @@ Catalogs are read once from the install (cached). If the install can't be found
 we report 'unknown' rather than failing builds. This is the same logic the
 standalone audit_builds.py uses, exposed so the app can show a live "verified"
 badge in the builder.
+
+Note: current-patch civic files gate ethics via `ethics = { OR = { value =
+ethic_x } }` (require any of) and `ethics = { NOT/NOR = { value = ethic_x } }`
+(exclude), not the older `has_ethic = ethic_x` syntax — we parse the format
+actually present in the install.
 """
 
 import os
@@ -29,7 +35,7 @@ def _catalogs():
     if _cache is not None:
         return _cache
     install = find_install()
-    data = {'install': install, 'civic_names': {}, 'civic_cat': {},
+    data = {'install': install, 'civic_names': {}, 'civic_cat': {}, 'civic_ethics': {},
             'origin_names': {}, 'trait_names': {}, 'trait_info': {}}
     if install:
         _load_loc(install, data)
@@ -69,6 +75,63 @@ def _load_civic_categories(install, data):
                 c = ('gestalt-hive' if 'hive' in cid else
                      'gestalt-machine' if 'machine' in cid else 'gestalt-any')
             data['civic_cat'][cid] = c
+            required, excluded = _ethic_requirements(_block(text, m.start()))
+            if required or excluded:
+                data['civic_ethics'][cid] = (required, excluded)
+
+
+def _ethic_requirements(block):
+    """Scan a civic's full block text for `ethics = { ... }` sub-blocks and
+    split each into (required_any, excluded) ethic id sets — exclusions are
+    whatever sits inside a nested NOT/NOR, everything else (typically an OR,
+    or a bare `value = ethic_x`) is a requirement."""
+    required, excluded = set(), set()
+    for m in re.finditer(r'ethics\s*=\s*\{', block):
+        sub = _block(block, m.start())
+        inner = sub[sub.index('{') + 1:sub.rindex('}')]
+        stripped = inner
+        for nm in re.finditer(r'(?:NOT|NOR)\s*=\s*\{', inner):
+            excl_block = _block(inner, nm.start())
+            excluded.update(re.findall(r'value\s*=\s*(ethic_[a-z_]+)', excl_block))
+            stripped = stripped.replace(excl_block, '')
+        required.update(re.findall(r'value\s*=\s*(ethic_[a-z_]+)', stripped))
+    excluded.discard('ethic_gestalt_consciousness')  # redundant w/ authority filtering
+    required.discard('ethic_gestalt_consciousness')
+    return required, excluded
+
+
+# Stellaris' fixed set of base ethics — unlike civics/traits/origins these are
+# not DLC-dependent and have been stable for years, so (as profile.py already
+# does for the reverse mapping) we hard-code the label<->id pairing instead of
+# reading it from localisation, which has no single reliable ethic-name key.
+_BASE_ETHIC_IDS = {
+    'militarist': 'militarist', 'pacifist': 'pacifist',
+    'xenophobe': 'xenophobe', 'xenophile': 'xenophile',
+    'materialist': 'materialist', 'spiritualist': 'spiritualist',
+    'authoritarian': 'authoritarian', 'egalitarian': 'egalitarian',
+    'gestalt consciousness': 'gestalt_consciousness',
+}
+
+
+def _ethic_ok(required, excluded, have):
+    if required and not (required & have):
+        return False
+    if excluded and (excluded & have):
+        return False
+    return True
+
+
+def _build_ethic_ids(ethics):
+    """Build's human-readable ethic labels (e.g. 'Fanatic Materialist') ->
+    the ethic_xxx / ethic_fanatic_xxx ids the game files reference."""
+    out = set()
+    for label in ethics:
+        low = label.lower()
+        fanatic = low.startswith('fanatic ')
+        base = _BASE_ETHIC_IDS.get(low[len('fanatic '):] if fanatic else low)
+        if base:
+            out.add(f'ethic_fanatic_{base}' if fanatic else f'ethic_{base}')
+    return out
 
 
 def _load_traits(install, data):
@@ -145,6 +208,7 @@ def validate_build(build):
 
     issues = []
     kind = _authority_kind(build['authority'])
+    build_ethic_ids = _build_ethic_ids(build.get('ethics', []))
 
     for civ in build['civics']:
         name = re.sub(r'\s*[—-].*$', '', civ).strip()
@@ -155,6 +219,19 @@ def validate_build(build):
         cats = {cat['civic_cat'].get(i, 'unknown') for i in ids}
         if not _civic_ok(cats, kind):
             issues.append(f'civic "{civ}" not available to a {build["authority"]} empire')
+            continue
+
+        # Ethic gate: only consider the id variant(s) actually selectable by
+        # this authority kind, and accept if any of them is satisfied.
+        relevant = [i for i in ids if _civic_ok({cat['civic_cat'].get(i, 'unknown')}, kind)]
+        gated = [cat['civic_ethics'][i] for i in relevant if i in cat['civic_ethics']]
+        if gated and not any(_ethic_ok(req, exc, build_ethic_ids) for req, exc in gated):
+            req, exc = gated[0]
+            if req and not (req & build_ethic_ids):
+                issues.append(f'civic "{civ}" needs ethic(s): {", ".join(sorted(req))}')
+            if exc and (exc & build_ethic_ids):
+                conflict = sorted(exc & build_ethic_ids)
+                issues.append(f'civic "{civ}" conflicts with ethic(s): {", ".join(conflict)}')
 
     oname = re.sub(r'\s*\(.*?\)|\s+or\s+.*$', '', build['origin']).strip()
     if not cat['origin_names'].get(_norm(oname)):

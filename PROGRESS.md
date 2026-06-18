@@ -18,3 +18,32 @@
   this while reading `advisor/gamedata.py` before writing the fleet tests.
 - **Next:** BACKLOG item #2 (validate.py: check civic <-> ethics/authority
   requirements) is the next highest-value unblocked task.
+
+## 2026-06-18 (cycle 2)
+- **Did:** Implemented BACKLOG item #2 — `validate_build` now flags civics
+  whose ethic gate conflicts with the build's ethics, not just authority.
+  Discovered while reading the installed civic files that the current patch
+  no longer uses the `has_ethic = ethic_x` syntax the backlog text assumed;
+  civics now gate ethics via `ethics = { OR = { value = ethic_x } }` (need
+  any of) and `ethics = { NOT/NOR = { value = ethic_x } }` (exclude). Adapted
+  the implementation to the format actually present in the install rather
+  than the stale syntax, per CLAUDE.md's "read the game, don't hard-code it."
+  Added `advisor/validate.py`: `_ethic_requirements` (parses a civic block's
+  `ethics=` sub-blocks into required-any/excluded ethic id sets, discarding
+  the universal-and-redundant gestalt exclusion), `_build_ethic_ids` (maps a
+  build's human-readable ethic labels like "Fanatic Materialist" to ethic ids
+  — hard-coded small fixed mapping, same precedent as `profile.py`'s ethic
+  label table, since the 8 base ethics are not DLC-dependent), `_ethic_ok`,
+  and wired them into `validate_build`'s civic loop (checked only against
+  the id variant(s) actually selectable for the build's authority kind).
+  New `tests/test_validate.py` (5 tests, pure parsing logic, no install
+  needed) covering OR->required, NOR->excluded, gestalt-noise discarding,
+  label->id mapping with Fanatic, and the required/excluded gate logic.
+- **Verified:** `python -m pytest -v` — 20 passed, 0 failed. `python
+  audit_builds.py` against the real installed Stellaris files — still 0
+  issues across all 12 shipped builds. Manually confirmed the check actually
+  catches a bad pairing: an Egalitarian/Xenophile build given "Imperial Cult"
+  (which needs Authoritarian or Spiritualist) is correctly flagged; the same
+  civic on an Authoritarian/Militarist build is not.
+- **Next:** BACKLOG item #3 (analyze.py: species-trait-aware economy advice)
+  is the next highest-value unblocked task.
