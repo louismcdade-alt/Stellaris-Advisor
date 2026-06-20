@@ -1,0 +1,76 @@
+:root {
+  /* Color palette (ported from the original dashboard) */
+  --bg: #05070f;
+  --panel: rgba(16, 24, 48, 0.72);
+  --panel2: rgba(19, 31, 61, 0.72);
+  --line: rgba(70, 110, 200, 0.22);
+  --text: #d3e2ff;
+  --muted: #8197c6;
+  --accent: #46c6ff;
+  --accent2: #6a7bff;
+  --accent-rgb: 70, 198, 255;
+  --gold: #ffd166;
+  --gold-rgb: 255, 209, 102;
+  --crit: #ff5b6e;
+  --warn: #ffb454;
+  --info: #5fa8ff;
+  --good: #46e0a0;
+  --cat-economy: #46e0a0;
+  --cat-military: #ff7a8a;
+  --cat-diplomacy: #c98cff;
+  --cat-research: #46c6ff;
+  --cat-expansion: #ffd166;
+  --cat-progression: #8be9fd;
+  --cat-identity: #ffb454;
+  --cat-origin: #9af0c0;
+  --cat-civics: #9ab8ff;
+  --cat-ascension: #e08bff;
+  --cut: 14px; /* corner-cut size for the angular Stellaris panel chrome */
+
+  /* Motion system -- the single source of truth every animation draws from.
+     Only transform/opacity are ever animated (GPU-accelerated, no layout
+     shift). See frontend/src/motion.js for the JS-side mirror of these. */
+  --dur-instant: 100ms; /* press feedback */
+  --dur-micro: 180ms; /* hover/focus, small state changes */
+  --dur-base: 320ms; /* entrances, panel-level transitions */
+  --dur-relaxed: 480ms; /* tab switches, larger reveals */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* decisive deceleration: entrances */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* overshoot-settle: press release, toggles */
+  --ease-soft-spring: cubic-bezier(0.22, 1, 0.36, 1); /* gentle settle: hover glow */
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1); /* symmetric: cross-fades */
+  --stagger-step: 0.045s; /* per sibling in a revealed list/grid */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 0ms;
+    --dur-micro: 0ms;
+    --dur-base: 0ms;
+    --dur-relaxed: 0ms;
+    --stagger-step: 0s;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font: 15px/1.5 'Segoe UI', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}

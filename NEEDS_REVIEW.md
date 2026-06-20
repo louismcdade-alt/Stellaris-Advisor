@@ -82,3 +82,45 @@ job-slot capacities (would need to brace-extract each building/district id's
 own block to read its job-grant fields) against `pop_groups` total size on
 the same colony — more work, but doesn't rely on guessing an undocumented
 field's meaning.
+
+## 2026-06-19 — Fleet Manager: `used_naval_capacity` (empire-wide) doesn't reconcile with hull-family naval capacity
+
+**Status: NOT IMPLEMENTED — feature request punted, root cause not found.**
+The user asked Fleet Manager to show how many fleets the recommended
+composition needs, scaled to the player's actual naval capacity. Implementing
+`fleets_needed = used_naval_capacity / recommended_naval_capacity` (both
+already-extracted, real numbers) seemed safe, but testing against a real save
+exposed a large unexplained gap: the player's `used_naval_capacity` (raw save
+field, read by `extract.py`) was **230**, while `advisor.fleet.recommend()`'s
+own `current_naval_capacity` for their entire warship fleet (12 Corvettes + 5
+Destroyers + 4 Cruisers, the only hull classes they own) was only **34** —
+slot-cost-summed directly from `compute_fleet`'s ship scan, so not itself in
+question. The other ~196 capacity is not accounted for by any hull class
+`fleet.py` tracks.
+
+Likely explanation (**unconfirmed**): Stellaris counts strike craft/fighter
+squadrons (hangar-bay components) against naval capacity separately from the
+carrying hull's own `fleet_slot_size`. If the player's ships are
+hangar-equipped, that would explain the gap without indicating any bug in the
+existing extraction — but this wasn't verified against game files or a
+controlled test save (e.g. a fleet with known, deliberately-varied hangar
+loadouts).
+
+**Why this wasn't guessed and shipped anyway:** scaling hull-count
+recommendations by `used_naval_capacity` while ~85% of that capacity is from
+an untracked source would have told the player to build ~4x more hulls than
+needed (since the existing hulls, via their strike craft, may already account
+for most of the "missing" capacity). Shipped as built, before this was
+caught, it would have been confidently wrong. Reverted before commit; Fleet
+Manager is unchanged from its prior, accurate (if narrower-scoped) behavior.
+Instead, the "how many fleets" ask was met with a presentation-only chunking
+of the recommended totals into ~20-ship batches (`FleetManager.jsx`,
+`chunkIntoFleets`) that makes no capacity claim at all.
+
+**Suggested next step:** find `ship_design`/`ship_size` component data for
+Hangar Bay in the installed game files (`gamedata.py` already reads
+`ship_sizes()`; would need a parallel reader for component naval-capacity
+costs, if such a field exists) and cross-reference against a save where a
+known subset of ships carry hangar bays vs. not, to confirm or rule out the
+strike-craft theory before attempting any capacity-based fleet-count math
+again.

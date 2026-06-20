@@ -45,6 +45,13 @@ htmlcov/
 .ruff_cache/
 .tox/
 
+# ───────────────────────── Node / frontend (frontend/) ─────────────────────────
+# The frontend is a Vite/React app, built at dev time to frontend/dist/ (already
+# covered by the generic dist/ rule above) and served as static files by the
+# stdlib-only Python server -- node_modules is a local dependency cache, never
+# committed. Run `npm install && npm run build` in frontend/ before first run.
+node_modules/
+
 # ───────────────────────── Runtime-generated (this app) ─────────────────────────
 # Runtime log written by app.py (stdout/stderr redirect). Regenerated each run.
 advisor.log

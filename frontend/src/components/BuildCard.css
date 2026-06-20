@@ -1,0 +1,117 @@
+.build-card {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--cut)) 0,
+    100% var(--cut),
+    100% 100%,
+    var(--cut) 100%,
+    0 calc(100% - var(--cut))
+  );
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.32);
+  display: flex;
+  flex-direction: column;
+}
+
+.build-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 16px 8px;
+}
+
+.build-name {
+  font-weight: 700;
+  font-size: 15.5px;
+  color: var(--text);
+}
+
+.dlcbadge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  color: #06101f;
+  background: linear-gradient(90deg, #9af0c0, #46e0a0);
+}
+.dlcbadge.dlc {
+  background: linear-gradient(90deg, #e08bff, #c98cff);
+}
+
+.gchips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  padding: 0 16px 10px;
+}
+.gchip {
+  font-size: 10.5px;
+  color: var(--accent);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 2px 9px;
+  background: rgba(var(--accent-rgb), 0.08);
+}
+
+.build-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.build-table td,
+.build-table th {
+  padding: 6px 16px;
+  vertical-align: top;
+  font-size: 13px;
+}
+.build-table th {
+  color: var(--muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 10.5px;
+  width: 86px;
+  text-align: left;
+  white-space: nowrap;
+}
+.build-table tr + tr td,
+.build-table tr + tr th {
+  border-top: 1px solid var(--line);
+}
+.build-table td b {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.build-why {
+  margin: 10px 16px 16px;
+  padding: 11px 13px;
+  background: var(--panel2);
+  border-left: 3px solid var(--good);
+  border-radius: 8px;
+  color: #aebede;
+  font-size: 13px;
+}
+
+.vbadge {
+  margin: 0 16px 14px;
+  font-size: 12px;
+  padding: 6px 11px;
+  border-radius: 8px;
+}
+.vbadge.ok {
+  color: var(--good);
+  background: rgba(70, 224, 160, 0.08);
+  border: 1px solid rgba(70, 224, 160, 0.3);
+}
+.vbadge.bad {
+  color: var(--warn);
+  background: rgba(255, 180, 84, 0.08);
+  border: 1px solid rgba(255, 180, 84, 0.35);
+}

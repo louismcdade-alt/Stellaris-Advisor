@@ -372,3 +372,42 @@
   [punted — see NEEDS_REVIEW.md], 11, 12). BACKLOG item #13 (extract.py:
   surface active-war status) is the next highest-value unblocked task,
   flagged as exploratory in its own entry.
+
+## 2026-06-19 — React/Vite frontend migration: Live Advisor, Fleet Manager, Empire Builder screens
+- **Did:** Ported the remaining three dashboard screens from the old
+  `templates/dashboard.html` to the new React + Vite + Framer Motion frontend
+  (`frontend/`), each wired to the existing `/api/advice`, `/api/fleet`,
+  `/api/builds` endpoints with no backend changes: `LiveAdvisor.jsx`
+  (advice cards, ascension split-out, resource table with count-up numbers,
+  3 ranked power-comparison tables), `FleetManager.jsx` (doctrine/stat header,
+  hull-class table with animated `scaleX` bars, specials table, notes —
+  fetches only while its tab is active since the ship scan is expensive),
+  `EmpireBuilder.jsx` (goal-filter pills, build card grid with staggered
+  entrance and verified/issue badges). New shared pieces: `Panel.jsx` (the
+  reusable corner-cut Stellaris chrome + scan-flash-on-update, used by all
+  three screens), `DataTable.css` (shared table look), `theme.js` (ported
+  the empire-ethic/authority accent-color theming that the old dashboard had).
+  All animation draws from the existing `motion.js` token system; bars use
+  `scaleX`/`opacity` only, never `width`, per the motion system's GPU-only rule.
+- **Also:** while building the Fleet Manager screen, the user asked for it to
+  show how many fleets the recommended composition needs (accounting for
+  naval capacity). Investigating against a real save found `used_naval_capacity`
+  (230) doesn't reconcile with the hull-family naval capacity `fleet.py`
+  already computes (34) — likely strike craft, unconfirmed. A capacity-scaled
+  `fleets_needed` was implemented, found to produce bad advice on the real
+  save (~4x too many recommended hulls), and reverted before commit — `fleet.py`
+  is byte-for-byte unchanged. Shipped a safe alternative instead: presentation-only
+  chunking of the recommended totals into ~20-ship batches (`FleetManager.jsx`'s
+  `chunkIntoFleets`), which makes no capacity claim. Full writeup in
+  `NEEDS_REVIEW.md` ("Fleet Manager: `used_naval_capacity` doesn't reconcile...").
+- **Verified:** `npx eslint src` clean, `npm run build` succeeds after every
+  change, all three screens manually checked against the live test server
+  (`python run.py --port 8775`) with a real save loaded — advice cards, fleet
+  table, and build cards all render real data correctly; `python -m pytest -v`
+  — 44 passed (Python side untouched by this work, confirms the fleet.py
+  revert left no trace).
+- **Next:** BACKLOG item #11 (update CLAUDE.md for the React/Vite frontend)
+  is the last item before this migration is fully wrapped up — tech
+  stack/conventions/commands/project-structure sections all need rewriting
+  now that all three screens are live and `templates/dashboard.html` is
+  unreferenced.

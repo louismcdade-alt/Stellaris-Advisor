@@ -1,0 +1,28 @@
+.goalfilter {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.gbtn {
+  background: var(--panel2);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition:
+    color var(--dur-micro) var(--ease-out),
+    background var(--dur-micro) var(--ease-out);
+}
+.gbtn:hover {
+  color: var(--text);
+}
+.gbtn.active {
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  color: #06101f;
+  font-weight: 700;
+  border-color: transparent;
+}
