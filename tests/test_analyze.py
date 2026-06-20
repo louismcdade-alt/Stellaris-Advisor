@@ -66,6 +66,30 @@ def test_analyze_military_reports_strongest_when_player_leads():
     assert good[0]['title'] == 'Strongest military among rivals'
 
 
+def test_analyze_military_reports_active_war_by_opponent_name():
+    player = _player(wars=[{'opponent': 'Oxbraxi', 'side': 'defender',
+                            'war_exhaustion': 0.0427, 'start_date': '2273.09.04'}])
+    out = analyze_military(_snap(player))
+    warnings = [a for a in out if a['priority'] == 'warning' and 'Oxbraxi' in a['title']]
+    assert warnings
+    assert 'Defending against Oxbraxi' in warnings[0]['detail']
+    assert '4%' in warnings[0]['detail']
+
+
+def test_analyze_military_falls_back_to_recently_at_war_when_no_active_war():
+    player = _player(last_date_at_war='2199.12.01')
+    out = analyze_military(_snap(player))
+    cards = [a for a in out if a['title'] == 'Recently at war']
+    assert cards
+    assert cards[0]['priority'] == 'info'
+
+
+def test_analyze_military_no_war_card_when_neither_active_nor_recent():
+    player = _player()
+    out = analyze_military(_snap(player))
+    assert not [a for a in out if 'war' in a['title'].lower()]
+
+
 def test_analyze_species_tips_on_mapped_trait():
     player = _player()
     player['identity']['species_traits'] = ['trait_intelligent', 'trait_unmapped_xyz']

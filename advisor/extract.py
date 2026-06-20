@@ -292,6 +292,60 @@ def _relations(country):
     return out
 
 
+def _active_wars(gs, pid, countries_raw, search_start=0):
+    """Wars the player's country is a participant in right now (as a primary
+    belligerent, ally, subject or overlord), with the opposing side's primary
+    belligerent resolved to a readable name. Distinct from `last_date_at_war`,
+    which only says when the player was *last* at war, not whether they still
+    are.
+
+    `search_start` lets the caller skip ahead to just past a block known to
+    come before `war=` in the file (the `war=` section sits very late in a
+    large save, so scanning from offset 0 roughly doubles the time spent
+    finding it)."""
+    wb, _ = extract_block(gs, 'war', start=search_start)
+    if wb is None and search_start:
+        # `war=` should follow `country=`, but fall back to a full scan rather
+        # than silently reporting "no wars" if some save layout breaks that
+        # assumption.
+        wb, _ = extract_block(gs, 'war')
+    wars_raw = parse(wb[1:-1]) if wb else {}
+    if not isinstance(wars_raw, dict):
+        return []
+    try:
+        pid_n = int(pid)
+    except (TypeError, ValueError):
+        return []
+
+    out = []
+    for w in wars_raw.values():
+        if not isinstance(w, dict):
+            continue
+        attackers = _aslist(w.get('attackers'))
+        defenders = _aslist(w.get('defenders'))
+        in_attackers = any(isinstance(a, dict) and a.get('country') == pid_n for a in attackers)
+        in_defenders = any(isinstance(d, dict) and d.get('country') == pid_n for d in defenders)
+        if not (in_attackers or in_defenders):
+            continue
+        side = 'attacker' if in_attackers else 'defender'
+        opposing = defenders if in_attackers else attackers
+        primary = next((o for o in opposing
+                        if isinstance(o, dict) and o.get('call_type') == 'primary'), None)
+        opponent = primary or (opposing[0] if opposing else None)
+        opponent_id = opponent.get('country') if isinstance(opponent, dict) else None
+        opponent_raw = countries_raw.get(str(opponent_id), {}) if opponent_id is not None else {}
+        opponent_name = (_resolve_name(opponent_raw.get('name'))
+                         or (f'Empire {opponent_id}' if opponent_id is not None else 'Unknown'))
+        exhaustion_key = 'attacker_war_exhaustion' if side == 'attacker' else 'defender_war_exhaustion'
+        out.append({
+            'opponent': opponent_name,
+            'side': side,
+            'war_exhaustion': _num(w.get(exhaustion_key)),
+            'start_date': w.get('start_date'),
+        })
+    return out
+
+
 def _identity(country, species_db):
     """Raw identity fields: ethics, authority, civics, origin, founder traits.
 
@@ -346,7 +400,7 @@ def build_snapshot(sav_path):
             pid = pm.group(1)
 
     # Parse the country dictionary only.
-    cb, _ = extract_block(gs, 'country')
+    cb, c_end = extract_block(gs, 'country')
     countries_raw = parse(cb[1:-1]) if cb else {}
 
     # Species database (small) — used to read the founder species' traits.
@@ -401,6 +455,7 @@ def build_snapshot(sav_path):
         'in_federation': bool(player_raw.get('federation')),
         'war_allies': _aslist(player_raw.get('war_allies')),
         'last_date_at_war': player_raw.get('last_date_at_war'),
+        'wars': _active_wars(gs, pid, countries_raw, search_start=c_end if c_end != -1 else 0),
         'government': (player_raw.get('government') or {}).get('type')
                       if isinstance(player_raw.get('government'), dict) else None,
         'ethics': _aslist((player_raw.get('ethos') or {}).get('ethic'))

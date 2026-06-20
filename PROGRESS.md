@@ -411,3 +411,48 @@
   stack/conventions/commands/project-structure sections all need rewriting
   now that all three screens are live and `templates/dashboard.html` is
   unreferenced.
+
+## 2026-06-20 — CLAUDE.md update, legacy dashboard removal, BACKLOG item #13 (active-war status)
+- **Did:** Finished the React/Vite migration wrap-up: updated CLAUDE.md for the
+  new frontend (tech stack, commands, data-flow diagram, project structure,
+  conventions, do-not-touch list; also fixed a stale "no tests exist" claim —
+  there are 47 now), added `frontend/node_modules/` to `.gitignore`, deleted
+  the now-unreferenced `templates/dashboard.html` (684 lines, superseded by
+  `frontend/`), and committed the whole migration (`6ee1e8a`).
+  Then picked up BACKLOG item #13: surface active-war status. Added
+  `advisor.extract._active_wars()`, which brace-extracts the gamestate's
+  top-level `war=` section (not parsed anywhere before this), finds any war
+  where the player's country appears in `attackers`/`defenders` (directly or
+  via alliance/subject/overlord call-ins), and resolves the *opposing* side's
+  `call_type=primary` belligerent to a readable name via the already-parsed
+  `countries_raw` dict. Wired into `player['wars']` in `build_snapshot`.
+  `analyze_military` now emits a `warning` card per active war ("At war with
+  X" — attacking/defending, start date, war exhaustion %) instead of the old
+  `last_date_at_war`-only heuristic; that heuristic is kept as a fallback
+  (retitled "Recently at war", downgraded to `info`) for when no war block
+  matches but the player was at war within the last year.
+- **Performance:** `war=` sits very late in a large save's gamestate (~82%
+  through the 29 MB file on the test save), so a cold `extract_block` scan
+  from offset 0 cost ~0.35s on its own. Reused the end-offset already
+  returned by the (already-mandatory) `country=` block extraction as the
+  search start for `war=` — `country=` is confirmed to end well before
+  `war=` begins on every save checked — cutting that cost to ~0.16s. Falls
+  back to a full scan from 0 if nothing is found past that offset, so an
+  unexpected save layout degrades to the slower-but-correct path instead of
+  silently reporting "no wars". Note: `build_snapshot`'s total time on this
+  particular (large, late-game, turn ~2275) save was already ~2.1s before
+  this change, over the ~1.5s figure documented in CLAUDE.md — a pre-existing
+  condition on this specific save, not introduced here; this change adds
+  ~0.15-0.2s on top of that baseline.
+- **Verified:** ran `_active_wars`/`build_snapshot` against the newest save
+  in all 11 of the user's campaigns — correctly found 0, 1, and 2
+  simultaneous active wars across different saves, both attacker and
+  defender sides, with correct opponent names and exhaustion values (cross-
+  checked one save's raw `war=` block by hand). Added three new
+  `test_analyze.py` cases (active-war card, historical fallback, neither).
+  `python -m pytest -v` — 47 passed.
+- **Note:** BACKLOG item #14 referenced the now-deleted `templates/dashboard.html`;
+  updated it to point at `frontend/src/components/EmpireBuilder.jsx`/`GoalFilter.jsx`
+  instead (no functional change, just kept the backlog accurate).
+- **Next:** BACKLOG item #15 (README.md module-layout/test-suite docs) is the
+  next unblocked item.

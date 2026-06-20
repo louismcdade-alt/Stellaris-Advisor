@@ -128,7 +128,7 @@ function/behavior, and a "done when" check.
   mismatched (same pattern as the trait-budget check in item #6, which did turn up
   real bugs) before calling it done.
 
-## 13. extract.py + analyze.py: surface active-war status
+## 13. [DONE 2026-06-20] extract.py + analyze.py: surface active-war status
 - **Where:** `advisor/extract.py` (new parsing of the gamestate's top-level `war=`
   / `wars=` blocks — not parsed at all today, only `last_date_at_war` and per-relation
   `truce` are) + `advisor/analyze.py` (`analyze_military` or `analyze_diplomacy`).
@@ -140,12 +140,13 @@ function/behavior, and a "done when" check.
 - **Done when:** a save where the player is mid-war produces a card naming the
   opponent; a save at peace produces none, and live-advice latency stays ~1.5s.
 
-## 14. dashboard: Empire Builder free-text search
-- **Where:** `templates/dashboard.html` (`buildGoalButtons`/`loadBuilds`, the
-  `#builder-head` row).
+## 14. Empire Builder: free-text search
+- **Where:** `frontend/src/components/EmpireBuilder.jsx` + `GoalFilter.jsx` (the
+  goal-filter chip row); `EmpireBuilder` already holds the full `d.builds` list
+  client-side via `useBuilds`.
 - **Do:** add a text input next to the goal-filter chips that filters the already-
-  loaded `d.builds` client-side by substring match against name/civics/traits/origin
-  (no new API call needed — `loadBuilds()` already has the full list in memory).
+  loaded builds client-side by substring match against name/civics/traits/origin
+  (no new API call needed — the full list is already in memory).
 - **Done when:** typing e.g. "hive" narrows the builder grid to matching builds
   instantly, clearing the box restores the full (goal-filtered) list.
 

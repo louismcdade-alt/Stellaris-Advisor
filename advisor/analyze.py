@@ -292,17 +292,33 @@ def analyze_military(snap):
                 'detail': f'Your fleet power {my_mil:.0f}. Strongest rival '
                           f'{strongest["name"]} at {strongest["military_power"]:.0f}.'})
 
-    # Active / recent war.
-    war_age = _years_since(p.get('last_date_at_war'), snap.get('date'))
-    if war_age is not None and war_age <= 1.0:
+    # Active war (read directly from the save's `war=` section, so this is a
+    # real-time "you are at war right now" check, not the `last_date_at_war`
+    # heuristic below which only says when the player was *last* at war).
+    wars = p.get('wars') or []
+    if wars:
         allies = len(p.get('war_allies', []))
         ally_txt = f' You have {allies} war ally/allies — coordinate your fleets.' if allies else ''
-        out.append({
-            'priority': 'warning', 'category': 'military',
-            'title': 'Currently at war',
-            'detail': f'You were at war as recently as {p.get("last_date_at_war")}. Keep your '
-                      f'main fleet repaired and concentrated, defend choke-point starbases, and '
-                      f'watch war exhaustion.{ally_txt}'})
+        for w in wars:
+            verb = 'Attacking' if w['side'] == 'attacker' else 'Defending against'
+            out.append({
+                'priority': 'warning', 'category': 'military',
+                'title': f'At war with {w["opponent"]}',
+                'detail': f'{verb} {w["opponent"]} since {w.get("start_date") or "unknown"} '
+                          f'(war exhaustion {w["war_exhaustion"] * 100:.0f}%). Keep your main '
+                          f'fleet repaired and concentrated, defend choke-point starbases, and '
+                          f'watch war exhaustion.{ally_txt}'})
+    else:
+        # No active war found in the save right now — fall back to the
+        # historical marker so a war that ended very recently still gets a
+        # (clearly-worded) heads-up.
+        war_age = _years_since(p.get('last_date_at_war'), snap.get('date'))
+        if war_age is not None and war_age <= 1.0:
+            out.append({
+                'priority': 'info', 'category': 'military',
+                'title': 'Recently at war',
+                'detail': f'You were at war as recently as {p.get("last_date_at_war")}. '
+                          f'Rebuild your fleet and repair starbases before the next conflict.'})
 
     # Fallen empires: catastrophically strong, leave alone.
     fes = [e for e in snap['empires'].values() if e['type'] == 'fallen_empire']
