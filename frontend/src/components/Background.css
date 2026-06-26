@@ -1,0 +1,33 @@
+.bg-stars {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  display: block;
+  pointer-events: none;
+}
+
+.bg-nebula {
+  position: fixed;
+  inset: -20%;
+  z-index: -3;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 600px at 78% -8%, rgba(40, 70, 150, 0.55), transparent 60%),
+    radial-gradient(700px 700px at 12% 110%, rgba(90, 40, 130, 0.4), transparent 60%),
+    radial-gradient(600px 500px at 50% 50%, rgba(20, 40, 90, 0.3), transparent 70%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bg-nebula {
+    animation: bg-drift 40s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes bg-drift {
+  from {
+    transform: translate(-2%, -1%) scale(1);
+  }
+  to {
+    transform: translate(2%, 1%) scale(1.08);
+  }
+}

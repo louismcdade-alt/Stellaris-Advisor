@@ -1,0 +1,117 @@
+.header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(8, 12, 26, 0.85), rgba(8, 12, 26, 0.55));
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  backdrop-filter: blur(10px);
+}
+
+.header::before,
+.header::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  width: 18px;
+  height: 18px;
+  border-top: 2px solid rgba(var(--gold-rgb), 0.65);
+  pointer-events: none;
+}
+.header::before {
+  left: 6px;
+  border-left: 2px solid rgba(var(--gold-rgb), 0.65);
+}
+.header::after {
+  right: 6px;
+  border-right: 2px solid rgba(var(--gold-rgb), 0.65);
+}
+
+.header h1 {
+  font-size: 17px;
+  margin: 0;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
+.header h1 .lit {
+  color: var(--accent);
+  text-shadow: 0 0 18px rgba(var(--accent-rgb), 0.7);
+}
+
+.empire {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.profile {
+  display: inline-block;
+  color: #2a1d00;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 12px;
+  clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+  background: linear-gradient(90deg, var(--gold), #ffe9b3);
+  box-shadow: 0 0 14px rgba(var(--gold-rgb), 0.4);
+  cursor: default;
+}
+
+.date {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+
+.spacer {
+  margin-left: auto;
+}
+
+.header select {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  max-width: 280px;
+}
+
+.status {
+  color: var(--muted);
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--dot-color, var(--good));
+  transition: background var(--dur-base) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dot {
+    animation: header-pulse 2s infinite;
+  }
+}
+
+@keyframes header-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--dot-color, var(--good)) 60%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 7px color-mix(in srgb, var(--dot-color, var(--good)) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--dot-color, var(--good)) 0%, transparent);
+  }
+}

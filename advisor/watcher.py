@@ -3,7 +3,9 @@ Find the save the player is currently in, and re-parse it only when it changes.
 
 Stellaris writes a new autosave file (e.g. autosave_2245.07.01.sav) periodically
 and a manual save when you hit save. We watch the whole save-games tree and treat
-the most-recently-modified .sav as "the game you're playing right now".
+the most-recently-modified .sav as "the game you're playing right now" -- unless
+the dashboard's campaign dropdown has pinned a specific one, in which case that
+choice is persisted to last_campaign.txt and restored on the next launch.
 """
 
 import os
@@ -75,6 +77,29 @@ def list_campaigns(save_root):
     return out
 
 
+def _last_campaign_path():
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        'last_campaign.txt')
+
+
+def _read_last_campaign():
+    """App-managed state (not user data, unlike owned_dlc.txt) -- the folder
+    name of the campaign last selected via the dashboard dropdown, so a
+    relaunch reopens on it instead of falling back to the newest save."""
+    try:
+        return open(_last_campaign_path(), encoding='utf-8').read().strip()
+    except OSError:
+        return ''
+
+
+def _write_last_campaign(campaign):
+    try:
+        with open(_last_campaign_path(), 'w', encoding='utf-8') as f:
+            f.write(campaign or '')
+    except OSError:
+        pass
+
+
 def newest_save(save_root, campaign=None):
     """Return path to the most recently modified .sav, or None.
 
@@ -95,7 +120,7 @@ class AdvisorState:
 
     def __init__(self, save_root=None, campaign=None):
         self.save_root = save_root or default_save_root()
-        self.campaign = campaign
+        self.campaign = campaign or _read_last_campaign() or None
         self._current_path = None
         self._current_mtime = None
         self._result = None
@@ -133,9 +158,11 @@ class AdvisorState:
     def set_campaign(self, campaign):
         """Switch which campaign to watch ('' / None = auto, newest of all).
 
-        Clears the cache so the next refresh re-parses the chosen save.
+        Clears the cache so the next refresh re-parses the chosen save, and
+        persists the choice so a relaunch reopens on it.
         """
         self.campaign = campaign or None
+        _write_last_campaign(self.campaign or '')
         self._current_path = None
         self._current_mtime = None
         self._result = None

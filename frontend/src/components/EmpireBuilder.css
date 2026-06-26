@@ -1,0 +1,31 @@
+.builder-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.builder-dlc {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+.builder-dlc b {
+  color: var(--good);
+}
+
+.builds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 16px;
+}
+
+.builder-empty {
+  padding: 36px;
+  text-align: center;
+  color: var(--muted);
+}
+.builder-empty.err {
+  color: var(--warn);
+}

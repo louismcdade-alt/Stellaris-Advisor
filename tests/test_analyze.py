@@ -1,4 +1,4 @@
-from advisor.analyze import analyze_economy, analyze_military, analyze_species
+from advisor.analyze import analyze_economy, analyze_military, analyze_species, analyze_diplomacy
 
 
 def _player(**overrides):
@@ -15,6 +15,8 @@ def _player(**overrides):
         'balance': {'energy': 0, 'minerals': 0, 'alloys': 0, 'food': 0,
                     'consumer_goods': 0, 'trade': 0},
         'military_power': 1000,
+        'relations': [],
+        'in_federation': False,
     }
     base.update(overrides)
     return base
@@ -64,6 +66,30 @@ def test_analyze_military_reports_strongest_when_player_leads():
     assert good[0]['title'] == 'Strongest military among rivals'
 
 
+def test_analyze_military_reports_active_war_by_opponent_name():
+    player = _player(wars=[{'opponent': 'Oxbraxi', 'side': 'defender',
+                            'war_exhaustion': 0.0427, 'start_date': '2273.09.04'}])
+    out = analyze_military(_snap(player))
+    warnings = [a for a in out if a['priority'] == 'warning' and 'Oxbraxi' in a['title']]
+    assert warnings
+    assert 'Defending against Oxbraxi' in warnings[0]['detail']
+    assert '4%' in warnings[0]['detail']
+
+
+def test_analyze_military_falls_back_to_recently_at_war_when_no_active_war():
+    player = _player(last_date_at_war='2199.12.01')
+    out = analyze_military(_snap(player))
+    cards = [a for a in out if a['title'] == 'Recently at war']
+    assert cards
+    assert cards[0]['priority'] == 'info'
+
+
+def test_analyze_military_no_war_card_when_neither_active_nor_recent():
+    player = _player()
+    out = analyze_military(_snap(player))
+    assert not [a for a in out if 'war' in a['title'].lower()]
+
+
 def test_analyze_species_tips_on_mapped_trait():
     player = _player()
     player['identity']['species_traits'] = ['trait_intelligent', 'trait_unmapped_xyz']
@@ -78,3 +104,31 @@ def test_analyze_species_yields_nothing_for_unmapped_traits():
     player['identity']['species_traits'] = ['trait_unmapped_xyz', 'trait_also_unmapped']
     out = analyze_species(_snap(player))
     assert out == []
+
+
+def _diplomacy_setup(in_federation):
+    rivalA = {'id': '1', 'type': 'default', 'name': 'Rival A', 'military_power': 100}
+    contactB = {'id': '2', 'type': 'default', 'name': 'Contact B', 'military_power': 500}
+    contactC = {'id': '3', 'type': 'default', 'name': 'Contact C', 'military_power': 200}
+    player = _player(relations=[
+        {'country': 1, 'communications': True, 'is_rival': True},
+        {'country': 2, 'communications': True},
+        {'country': 3, 'communications': True},
+    ], in_federation=in_federation)
+    snap = _snap(player, {'1': rivalA, '2': contactB, '3': contactC})
+    return snap
+
+
+def test_analyze_diplomacy_suggests_ally_when_not_in_federation():
+    out = analyze_diplomacy(_diplomacy_setup(in_federation=False))
+    titles = [a['title'] for a in out]
+    assert 'No allies yet — consider a defensive pact' in titles
+
+
+def test_analyze_diplomacy_suppresses_ally_suggestion_when_in_federation():
+    out = analyze_diplomacy(_diplomacy_setup(in_federation=True))
+    titles = [a['title'] for a in out]
+    assert 'No allies yet — consider a defensive pact' not in titles
+    assert 'Federation member' in titles
+    good = [a for a in out if a['title'] == 'Federation member']
+    assert good[0]['priority'] == 'good'

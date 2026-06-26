@@ -5,7 +5,9 @@ Checks, per build, that every element is actually usable:
   * civics exist, suit the build's authority (regular / gestalt hive|machine /
     corporate), and don't conflict with the build's ethics (e.g. a civic gated
     on Authoritarian ethics picked for an Egalitarian build),
-  * the origin exists,
+  * the origin exists and its own ethic/authority requirements are met (origins
+    gate the same way civics do, e.g. Necrophage excludes Xenophile/Fanatic
+    Egalitarian; Progenitor Hive requires Hive Mind authority),
   * each species trait exists AND is selectable at empire creation for a normal
     biological species (not ascension/cyborg/robotic/shroud, and not locked to a
     specific phenotype via species_class), no two selected traits are
@@ -38,10 +40,12 @@ def _catalogs():
         return _cache
     install = find_install()
     data = {'install': install, 'civic_names': {}, 'civic_cat': {}, 'civic_ethics': {},
-            'origin_names': {}, 'trait_names': {}, 'trait_info': {}}
+            'origin_names': {}, 'origin_ethics': {}, 'origin_authority': {},
+            'trait_names': {}, 'trait_info': {}}
     if install:
         _load_loc(install, data)
         _load_civic_categories(install, data)
+        _load_origin_gates(install, data)
         _load_traits(install, data)
     _cache = data
     return _cache
@@ -82,24 +86,52 @@ def _load_civic_categories(install, data):
                 data['civic_ethics'][cid] = (required, excluded)
 
 
-def _ethic_requirements(block):
-    """Scan a civic's full block text for `ethics = { ... }` sub-blocks and
-    split each into (required_any, excluded) ethic id sets — exclusions are
+def _gate_requirements(block, section, prefix):
+    """Scan a civic/origin's block text for `<section> = { ... }` sub-blocks
+    and split each into (required_any, excluded) id sets — exclusions are
     whatever sits inside a nested NOT/NOR, everything else (typically an OR,
-    or a bare `value = ethic_x`) is a requirement."""
+    or a bare `value = <prefix>x`) is a requirement. Used for both `ethics`
+    (prefix `ethic_`) and `authority` (prefix `auth_`) gates, which use the
+    identical OR/NOT/NOR shape in the current-patch civic/origin files."""
     required, excluded = set(), set()
-    for m in re.finditer(r'ethics\s*=\s*\{', block):
+    value_re = re.compile(r'value\s*=\s*(' + re.escape(prefix) + r'[a-z_]+)')
+    for m in re.finditer(section + r'\s*=\s*\{', block):
         sub = _block(block, m.start())
         inner = sub[sub.index('{') + 1:sub.rindex('}')]
         stripped = inner
         for nm in re.finditer(r'(?:NOT|NOR)\s*=\s*\{', inner):
             excl_block = _block(inner, nm.start())
-            excluded.update(re.findall(r'value\s*=\s*(ethic_[a-z_]+)', excl_block))
+            excluded.update(value_re.findall(excl_block))
             stripped = stripped.replace(excl_block, '')
-        required.update(re.findall(r'value\s*=\s*(ethic_[a-z_]+)', stripped))
+        required.update(value_re.findall(stripped))
+    return required, excluded
+
+
+def _load_origin_gates(install, data):
+    path = os.path.join(install, 'common', 'governments', 'civics', '00_origins.txt')
+    if not os.path.isfile(path):
+        return
+    text = open(path, encoding='utf-8', errors='replace').read()
+    for m in re.finditer(r'^(origin_[a-z0-9_]+)\s*=\s*\{', text, re.M):
+        oid = m.group(1)
+        block = _block(text, m.start())
+        required, excluded = _ethic_requirements(block)
+        if required or excluded:
+            data['origin_ethics'][oid] = (required, excluded)
+        required, excluded = _authority_requirements(block)
+        if required or excluded:
+            data['origin_authority'][oid] = (required, excluded)
+
+
+def _ethic_requirements(block):
+    required, excluded = _gate_requirements(block, 'ethics', 'ethic_')
     excluded.discard('ethic_gestalt_consciousness')  # redundant w/ authority filtering
     required.discard('ethic_gestalt_consciousness')
     return required, excluded
+
+
+def _authority_requirements(block):
+    return _gate_requirements(block, 'authority', 'auth_')
 
 
 # Stellaris' fixed set of base ethics — unlike civics/traits/origins these are
@@ -123,11 +155,26 @@ _TRAIT_POINT_BUDGET = 2
 
 
 def _ethic_ok(required, excluded, have):
+    """Generic required-any/excluded set check — used for both ethic and
+    authority gates, which have the identical required/excluded shape."""
     if required and not (required & have):
         return False
     if excluded and (excluded & have):
         return False
     return True
+
+
+# Authority labels as builds.py writes them -> the auth_xxx id origins gate on.
+_BUILD_AUTH_IDS = {
+    'democratic': 'auth_democratic', 'oligarchic': 'auth_oligarchic',
+    'dictatorial': 'auth_dictatorial', 'imperial': 'auth_imperial',
+    'corporate': 'auth_corporate', 'hive mind': 'auth_hive_mind',
+    'machine intelligence': 'auth_machine_intelligence',
+}
+
+
+def _build_authority_id(authority):
+    return _BUILD_AUTH_IDS.get((authority or '').lower())
 
 
 def _build_ethic_ids(ethics):
@@ -267,8 +314,31 @@ def validate_build(build):
                 issues.append(f'civic "{civ}" conflicts with ethic(s): {", ".join(conflict)}')
 
     oname = re.sub(r'\s*\(.*?\)|\s+or\s+.*$', '', build['origin']).strip()
-    if not cat['origin_names'].get(_norm(oname)):
+    origin_ids = cat['origin_names'].get(_norm(oname))
+    if not origin_ids:
         issues.append(f'origin "{build["origin"]}" not found in game files')
+    else:
+        build_auth_id = _build_authority_id(build['authority'])
+        e_gated = [cat['origin_ethics'][i] for i in origin_ids if i in cat['origin_ethics']]
+        if e_gated and not any(_ethic_ok(req, exc, build_ethic_ids) for req, exc in e_gated):
+            req, exc = e_gated[0]
+            if req and not (req & build_ethic_ids):
+                issues.append(f'origin "{build["origin"]}" needs ethic(s): '
+                               f'{", ".join(sorted(req))}')
+            if exc and (exc & build_ethic_ids):
+                conflict = sorted(exc & build_ethic_ids)
+                issues.append(f'origin "{build["origin"]}" conflicts with ethic(s): '
+                               f'{", ".join(conflict)}')
+        a_gated = [cat['origin_authority'][i] for i in origin_ids if i in cat['origin_authority']]
+        if build_auth_id and a_gated and not any(
+                _ethic_ok(req, exc, {build_auth_id}) for req, exc in a_gated):
+            req, exc = a_gated[0]
+            if req and build_auth_id not in req:
+                issues.append(f'origin "{build["origin"]}" needs authority: '
+                               f'{", ".join(sorted(req))}')
+            if exc and build_auth_id in exc:
+                issues.append(f'origin "{build["origin"]}" not available to a '
+                               f'{build["authority"]} empire')
 
     selected = []
     for tr in build['traits']:

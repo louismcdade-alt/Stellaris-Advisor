@@ -292,17 +292,33 @@ def analyze_military(snap):
                 'detail': f'Your fleet power {my_mil:.0f}. Strongest rival '
                           f'{strongest["name"]} at {strongest["military_power"]:.0f}.'})
 
-    # Active / recent war.
-    war_age = _years_since(p.get('last_date_at_war'), snap.get('date'))
-    if war_age is not None and war_age <= 1.0:
+    # Active war (read directly from the save's `war=` section, so this is a
+    # real-time "you are at war right now" check, not the `last_date_at_war`
+    # heuristic below which only says when the player was *last* at war).
+    wars = p.get('wars') or []
+    if wars:
         allies = len(p.get('war_allies', []))
         ally_txt = f' You have {allies} war ally/allies — coordinate your fleets.' if allies else ''
-        out.append({
-            'priority': 'warning', 'category': 'military',
-            'title': 'Currently at war',
-            'detail': f'You were at war as recently as {p.get("last_date_at_war")}. Keep your '
-                      f'main fleet repaired and concentrated, defend choke-point starbases, and '
-                      f'watch war exhaustion.{ally_txt}'})
+        for w in wars:
+            verb = 'Attacking' if w['side'] == 'attacker' else 'Defending against'
+            out.append({
+                'priority': 'warning', 'category': 'military',
+                'title': f'At war with {w["opponent"]}',
+                'detail': f'{verb} {w["opponent"]} since {w.get("start_date") or "unknown"} '
+                          f'(war exhaustion {w["war_exhaustion"] * 100:.0f}%). Keep your main '
+                          f'fleet repaired and concentrated, defend choke-point starbases, and '
+                          f'watch war exhaustion.{ally_txt}'})
+    else:
+        # No active war found in the save right now — fall back to the
+        # historical marker so a war that ended very recently still gets a
+        # (clearly-worded) heads-up.
+        war_age = _years_since(p.get('last_date_at_war'), snap.get('date'))
+        if war_age is not None and war_age <= 1.0:
+            out.append({
+                'priority': 'info', 'category': 'military',
+                'title': 'Recently at war',
+                'detail': f'You were at war as recently as {p.get("last_date_at_war")}. '
+                          f'Rebuild your fleet and repair starbases before the next conflict.'})
 
     # Fallen empires: catastrophically strong, leave alone.
     fes = [e for e in snap['empires'].values() if e['type'] == 'fallen_empire']
@@ -346,9 +362,13 @@ def analyze_diplomacy(snap):
             'detail': 'Rivalries give influence but block cooperation: '
                       + ', '.join(name_of(r['country']) for r in rivals) + '.'})
 
-    if not allies and len(known) >= 2 and not prof.inward:
+    in_federation = bool(p.get('in_federation'))
+
+    if not allies and not in_federation and len(known) >= 2 and not prof.inward:
         # Suggest the strongest non-rival contact as an ally candidate.
-        # (Inward Perfection empires shun alliances, so skip this for them.)
+        # (Inward Perfection empires shun alliances, so skip this for them.
+        # Federation members may have no bilateral 'alliance' relation flag
+        # even though the federation itself is their alliance — skip too.)
         candidates = []
         for r in known:
             if r.get('is_rival'):
@@ -372,6 +392,13 @@ def analyze_diplomacy(snap):
             'title': f'{len(allies)} ally/allies',
             'detail': 'Allied with ' + ', '.join(name_of(r['country']) for r in allies)
                       + '. Coordinate wars and share intel.'})
+    elif in_federation:
+        out.append({
+            'priority': 'good', 'category': 'diplomacy',
+            'title': 'Federation member',
+            'detail': 'You belong to a federation — coordinate fleets and research with your '
+                      'federation members, and invest in federation laws/cohesion to grow its '
+                      'benefits further.'})
 
     if not out:
         out.append({

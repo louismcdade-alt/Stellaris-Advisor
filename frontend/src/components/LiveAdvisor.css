@@ -1,0 +1,31 @@
+.live-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 18px;
+}
+@media (max-width: 1040px) {
+  .live-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.live-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.live-footer {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.live-empty {
+  padding: 36px;
+  text-align: center;
+  color: var(--muted);
+}
+.live-empty.err {
+  color: var(--warn);
+}

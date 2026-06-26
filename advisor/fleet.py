@@ -9,6 +9,15 @@ the standard hull family and BioGenesis bioships.
 Doctrine: spam the cheapest hull early, shift to a main line of the heaviest hull
 you have, keep a cheap screen to soak strike craft / missiles, and add a capped
 number of titans for their fleet-wide auras.
+
+`current_naval_capacity`/`recommended_naval_capacity` sum slot_cost x count over
+this hull family's rows only (not the empire's total naval cap, which may include
+other families/starbases) -- they tell you what re-allocating to the recommended
+composition would cost versus what's already spent on it.
+
+Colossus/Juggernaut are unique capital hulls outside any tier -- they're reported
+as `specials` (not folded into `rows` or the budget math) since the game itself
+caps them at a handful per empire rather than sizing them off naval capacity.
 """
 
 from . import gamedata
@@ -20,7 +29,8 @@ BIO_HULLS = set(BIO_TIERS.values())
 
 # Fallback costs/prereqs if the game files can't be read.
 FALLBACK_SLOT = {'corvette': 1, 'destroyer': 2, 'cruiser': 3, 'battleship': 4, 'titan': 8,
-                 'mauler': 1, 'weaver': 2, 'harbinger': 3, 'stinger': 4, 'bio_titan': 8}
+                 'mauler': 1, 'weaver': 2, 'harbinger': 3, 'stinger': 4, 'bio_titan': 8,
+                 'colossus': 32, 'juggernaut': 32}
 FALLBACK_TECH = {'destroyer': 'tech_destroyers', 'cruiser': 'tech_cruisers',
                  'battleship': 'tech_battleships', 'titan': 'tech_titans',
                  'weaver': 'tech_weavers', 'harbinger': 'tech_harbingers',
@@ -38,6 +48,11 @@ TEMPLATE_BY_MAIN = {
 }
 
 PRETTY = {'bio_titan': 'Bio-Titan'}
+
+# Unique capital hulls (class shipclass_military_special / shipclass_starbase)
+# that never belong in the per-tier budget math — they're capped at a handful
+# per empire by the game itself, not something to size against naval capacity.
+SPECIAL_HULLS = ['colossus', 'juggernaut']
 
 
 def _pretty(name):
@@ -112,7 +127,13 @@ def recommend(player):
         rows.append({'class': _pretty(name), 'role': ROLE[slot],
                      'current': cur, 'recommended': rec, 'delta': rec - cur})
 
+    specials = [{'class': _pretty(name), 'count': comp[name],
+                 'naval_capacity': comp[name] * _slot_cost(name)}
+                for name in SPECIAL_HULLS if comp.get(name)]
+
     warships = sum(comp.get(h, 0) for h in tiers.values())
+    current_naval_capacity = sum(comp.get(h, 0) * _slot_cost(h) for h in tiers.values())
+    recommended_naval_capacity = sum(n * _slot_cost(name) for name, n in recommended.items())
     top_name = tiers[main]
     fam = 'bioship' if bio else 'standard'
     doctrine = _doctrine(main, fam, top_name)
@@ -141,8 +162,11 @@ def recommend(player):
         'family': fam,
         'data_source': 'game files' if gamedata.is_loaded() else 'built-in defaults',
         'used_naval_capacity': round(player.get('used_naval_capacity', 0) or 0),
+        'current_naval_capacity': round(current_naval_capacity),
+        'recommended_naval_capacity': round(recommended_naval_capacity),
         'warships': warships,
         'rows': rows,
+        'specials': specials,
         'notes': [n for n in notes if n],
     }
 

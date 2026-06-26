@@ -1,5 +1,6 @@
 from advisor.validate import (_ethic_requirements, _build_ethic_ids, _ethic_ok,
-                               _trait_opposites, _traits_conflict, _trait_cost)
+                               _trait_opposites, _traits_conflict, _trait_cost,
+                               _authority_requirements, _build_authority_id)
 
 
 def test_ethic_requirements_parses_or_as_required():
@@ -125,3 +126,35 @@ def test_trait_cost_ignores_slave_cost():
 
 def test_trait_cost_defaults_to_zero_when_absent():
     assert _trait_cost('trait_x = { category = normal }') == 0.0
+
+
+def test_authority_requirements_parses_bare_value_as_required():
+    block = '''
+    origin_machine = {
+        possible = {
+            authority = { value = auth_machine_intelligence }
+        }
+    }
+    '''
+    required, excluded = _authority_requirements(block)
+    assert required == {'auth_machine_intelligence'}
+    assert excluded == set()
+
+
+def test_authority_requirements_parses_not_as_excluded():
+    block = '''
+    origin_necrophage = {
+        possible = {
+            authority = { NOT = { value = auth_machine_intelligence } }
+        }
+    }
+    '''
+    required, excluded = _authority_requirements(block)
+    assert required == set()
+    assert excluded == {'auth_machine_intelligence'}
+
+
+def test_build_authority_id_maps_known_labels():
+    assert _build_authority_id('Hive Mind') == 'auth_hive_mind'
+    assert _build_authority_id('Democratic') == 'auth_democratic'
+    assert _build_authority_id('Unknown Label') is None

@@ -1,0 +1,92 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Stellaris Advisor logo">
+  <defs>
+    <!-- Deep-space backdrop -->
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0%" stop-color="#16233f"/>
+      <stop offset="55%" stop-color="#0b1326"/>
+      <stop offset="100%" stop-color="#060a16"/>
+    </radialGradient>
+    <!-- Star core glow -->
+    <radialGradient id="core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff6e0"/>
+      <stop offset="22%" stop-color="#ffe09a"/>
+      <stop offset="55%" stop-color="#ffb347"/>
+      <stop offset="100%" stop-color="#ff8a3c" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Ring stroke -->
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3ee0ff"/>
+      <stop offset="50%" stop-color="#5ad0ff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#2a7dff"/>
+    </linearGradient>
+    <linearGradient id="frame" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5fe6ff"/>
+      <stop offset="100%" stop-color="#1f6bd6"/>
+    </linearGradient>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+
+  <!-- Backdrop -->
+  <circle cx="256" cy="256" r="242" fill="url(#bg)"/>
+
+  <!-- Star field -->
+  <g fill="#bfe8ff">
+    <circle cx="120" cy="150" r="2" opacity="0.8"/>
+    <circle cx="395" cy="135" r="1.6" opacity="0.6"/>
+    <circle cx="420" cy="300" r="2.2" opacity="0.7"/>
+    <circle cx="100" cy="350" r="1.6" opacity="0.6"/>
+    <circle cx="360" cy="395" r="1.8" opacity="0.7"/>
+    <circle cx="150" cy="410" r="1.4" opacity="0.5"/>
+    <circle cx="440" cy="210" r="1.4" opacity="0.5"/>
+    <circle cx="80" cy="240" r="1.6" opacity="0.6"/>
+  </g>
+
+  <!-- Orbital rings -->
+  <g fill="none" stroke="url(#ring)" stroke-width="3">
+    <ellipse cx="256" cy="256" rx="168" ry="66" transform="rotate(-24 256 256)" opacity="0.9"/>
+    <ellipse cx="256" cy="256" rx="150" ry="150" opacity="0.45"/>
+    <ellipse cx="256" cy="256" rx="172" ry="78" transform="rotate(58 256 256)" opacity="0.65"/>
+  </g>
+
+  <!-- Orbiting bodies -->
+  <g filter="url(#soft)">
+    <circle cx="396" cy="206" r="8" fill="#7fe9ff"/>
+    <circle cx="128" cy="318" r="6" fill="#4fb8ff"/>
+    <circle cx="316" cy="378" r="5" fill="#9af0ff"/>
+  </g>
+
+  <!-- Star core glow halo -->
+  <circle cx="256" cy="256" r="96" fill="url(#core)" filter="url(#glow)" opacity="0.9"/>
+
+  <!-- Four-point advisor star -->
+  <g filter="url(#soft)">
+    <path d="M256 168
+             C262 222 290 250 344 256
+             C290 262 262 290 256 344
+             C250 290 222 262 168 256
+             C222 250 250 222 256 168 Z"
+          fill="url(#core)"/>
+    <circle cx="256" cy="256" r="26" fill="#fff7e6"/>
+  </g>
+
+  <!-- Outer frame -->
+  <circle cx="256" cy="256" r="242" fill="none" stroke="url(#frame)" stroke-width="6"/>
+  <circle cx="256" cy="256" r="230" fill="none" stroke="#2a89d6" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- Frame ticks (HUD detail) -->
+  <g stroke="#5fe6ff" stroke-width="3" stroke-linecap="round" opacity="0.85">
+    <line x1="256" y1="20" x2="256" y2="38"/>
+    <line x1="256" y1="474" x2="256" y2="492"/>
+    <line x1="20" y1="256" x2="38" y2="256"/>
+    <line x1="474" y1="256" x2="492" y2="256"/>
+  </g>
+</svg>
